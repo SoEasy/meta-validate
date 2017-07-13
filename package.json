@@ -1,0 +1,40 @@
+{
+  "name": "meta-validate",
+  "version": "1.0.0",
+  "description": "TypeScript validation utils",
+  "types": "index.d.ts",
+  "typescript": {
+    "definition": "index.d.ts"
+  },
+  "scripts": {
+    "lint-code": "node_modules/.bin/tslint -c ./tslint.json -p ./tsconfig.json --type-check",
+    "build": "webpack"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/SoEasy/meta-validate.git"
+  },
+  "keywords": [
+    "validation",
+    "forms",
+    "typescript"
+  ],
+  "author": "Vladimir Sannikov",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/SoEasy/meta-validate/issues"
+  },
+  "homepage": "https://github.com/SoEasy/meta-validate#readme",
+  "devDependencies": {
+    "dts-bundle": "0.7.2",
+    "lodash": "4.17.4",
+    "ts-loader": "2.1.0",
+    "ts-node": "3.0.6",
+    "tslint": "5.3.2",
+    "typescript": "2.4.1",
+    "webpack": "2.6.1"
+  },
+  "dependencies": {
+    "reflect-metadata": "0.1.10"
+  }
+}
