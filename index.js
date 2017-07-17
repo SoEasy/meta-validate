@@ -146,7 +146,7 @@ function makeDecorator(validationNeeded, validators, validateWith) {
                     var relatedKeyErrors = runValidators(relatedFieldValue, relatedValidators, _this);
                     existValidateMetadata.setValidityForField(relatedField, relatedKeyErrors);
                 }
-                _this.receiveErrors(existValidateMetadata.getErrors());
+                _this.receiveValidity(existValidateMetadata.getErrors());
             }
         };
         Object.defineProperty(target, propertyKey, descriptor);

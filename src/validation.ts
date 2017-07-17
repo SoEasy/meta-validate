@@ -1,4 +1,4 @@
-import { IMVFieldValidity, IMVValidators, MVValidator, ReceiveValidity } from './interfaces';
+import { IMVFieldValidity, IMVValidators, MVValidator } from './interfaces';
 import { ValidateRelationStore } from './relation-store';
 
 const VALIDATE_FIELDS_KEY = 'JsonNameValidateFields';
@@ -23,7 +23,7 @@ function runValidators<T>(newVal: any, validators: Array<MVValidator<T>>, contex
     return errors;
 }
 
-function makeDecorator<T extends ReceiveValidity>(
+function makeDecorator<T>(
     validationNeeded: boolean,
     validators?: IMVValidators<T>,
     validateWith?: Array<string>
@@ -73,7 +73,7 @@ function makeDecorator<T extends ReceiveValidity>(
                     const relatedKeyErrors = runValidators(relatedFieldValue, relatedValidators, _this);
                     existValidateMetadata.setValidityForField(relatedField, relatedKeyErrors);
                 }
-                _this.receiveErrors(existValidateMetadata.getErrors());
+                _this.receiveValidity(existValidateMetadata.getErrors());
             }
         };
         Object.defineProperty(target, propertyKey, descriptor);
@@ -81,10 +81,10 @@ function makeDecorator<T extends ReceiveValidity>(
     };
 }
 
-export function ValidationTrigger<T extends ReceiveValidity>(): any {
+export function ValidationTrigger<T>(): any {
     return makeDecorator<T>(false);
 }
 
-export function Validate<T extends ReceiveValidity>(validators: IMVValidators<T>, validateWith?: Array<string>): any {
+export function Validate<T>(validators: IMVValidators<T>, validateWith?: Array<string>): any {
     return makeDecorator<T>(true, validators, validateWith);
 }
