@@ -29,7 +29,7 @@ export interface IMVValidators<T> {
     * @description Интерфейс, который по хорошему должен реализовать класс, принимающий ошибки
     */
 export interface ReceiveValidity {
-        receiveValidity(validity: MVValidity): void;
+        receiveValidity(validity: Validity): void;
 }
 
 /**
