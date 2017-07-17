@@ -161,6 +161,20 @@ function Validate(validators, validateWith) {
     return makeDecorator(true, validators, validateWith);
 }
 exports.Validate = Validate;
+function isFullValid(validity) {
+    for (var _i = 0, _a = Object.keys(validity); _i < _a.length; _i++) {
+        var fieldKey = _a[_i];
+        var fieldValidity = validity[fieldKey];
+        for (var _b = 0, _c = Object.keys(validity[fieldKey]); _b < _c.length; _b++) {
+            var validityKey = _c[_b];
+            if (!fieldValidity[validityKey]) {
+                return false;
+            }
+        }
+    }
+    return true;
+}
+exports.isFullValid = isFullValid;
 
 
 /***/ }),
@@ -173,6 +187,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 var validation_1 = __webpack_require__(0);
 exports.Validate = validation_1.Validate;
 exports.ValidationTrigger = validation_1.ValidationTrigger;
+exports.isFullValid = validation_1.isFullValid;
 
 
 /***/ }),

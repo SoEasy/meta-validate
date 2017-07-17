@@ -1,4 +1,4 @@
-import { IMVFieldValidity, IMVValidators, MVValidator } from './interfaces';
+import { IMVFieldValidity, IMVValidators, MVValidator, MVValidity } from './interfaces';
 import { ValidateRelationStore } from './relation-store';
 
 const VALIDATE_FIELDS_KEY = 'JsonNameValidateFields';
@@ -87,4 +87,16 @@ export function ValidationTrigger<T>(): any {
 
 export function Validate<T>(validators: IMVValidators<T>, validateWith?: Array<string>): any {
     return makeDecorator<T>(true, validators, validateWith);
+}
+
+export function isFullValid(validity: MVValidity): boolean {
+    for (const fieldKey of Object.keys(validity)) {
+        const fieldValidity = validity[fieldKey];
+        for (const validityKey of Object.keys(validity[fieldKey])) {
+            if (!fieldValidity[validityKey]) {
+                return false;
+            }
+        }
+    }
+    return true;
 }

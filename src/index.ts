@@ -1,2 +1,2 @@
-export { Validate, ValidationTrigger } from './validation';
+export { Validate, ValidationTrigger, isFullValid } from './validation';
 export { ReceiveValidity } from './interfaces';
