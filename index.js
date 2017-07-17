@@ -73,7 +73,7 @@ return /******/ (function(modules) { // webpackBootstrap
 /******/ 	__webpack_require__.p = "";
 /******/
 /******/ 	// Load entry module and return exports
-/******/ 	return __webpack_require__(__webpack_require__.s = 1);
+/******/ 	return __webpack_require__(__webpack_require__.s = 2);
 /******/ })
 /************************************************************************/
 /******/ ([
@@ -83,7 +83,40 @@ return /******/ (function(modules) { // webpackBootstrap
 "use strict";
 
 Object.defineProperty(exports, "__esModule", { value: true });
-var relation_store_1 = __webpack_require__(2);
+/**
+ * @description Хранилище данных о валидности полей с вспомогательным методом проверки на полную валидность
+ */
+var Validity = (function () {
+    function Validity() {
+        this.validity = {};
+        this.errors = {};
+    }
+    Validity.prototype.isFullValid = function () {
+        for (var _i = 0, _a = Object.keys(this.validity); _i < _a.length; _i++) {
+            var fieldKey = _a[_i];
+            var fieldValidity = this.validity[fieldKey];
+            for (var _b = 0, _c = Object.keys(fieldValidity); _b < _c.length; _b++) {
+                var validityKey = _c[_b];
+                if (!fieldValidity[validityKey]) {
+                    return false;
+                }
+            }
+        }
+        return true;
+    };
+    return Validity;
+}());
+exports.Validity = Validity;
+
+
+/***/ }),
+/* 1 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+Object.defineProperty(exports, "__esModule", { value: true });
+var relation_store_1 = __webpack_require__(3);
 var VALIDATE_FIELDS_KEY = 'JsonNameValidateFields';
 /**
  * @description Функция запустит валидаторы для значения
@@ -161,37 +194,24 @@ function Validate(validators, validateWith) {
     return makeDecorator(true, validators, validateWith);
 }
 exports.Validate = Validate;
-function isFullValid(validity) {
-    for (var _i = 0, _a = Object.keys(validity); _i < _a.length; _i++) {
-        var fieldKey = _a[_i];
-        var fieldValidity = validity[fieldKey];
-        for (var _b = 0, _c = Object.keys(validity[fieldKey]); _b < _c.length; _b++) {
-            var validityKey = _c[_b];
-            if (!fieldValidity[validityKey]) {
-                return false;
-            }
-        }
-    }
-    return true;
-}
-exports.isFullValid = isFullValid;
 
 
 /***/ }),
-/* 1 */
+/* 2 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 Object.defineProperty(exports, "__esModule", { value: true });
-var validation_1 = __webpack_require__(0);
+var validation_1 = __webpack_require__(1);
 exports.Validate = validation_1.Validate;
 exports.ValidationTrigger = validation_1.ValidationTrigger;
-exports.isFullValid = validation_1.isFullValid;
+var validity_1 = __webpack_require__(0);
+exports.Validity = validity_1.Validity;
 
 
 /***/ }),
-/* 2 */
+/* 3 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -205,7 +225,7 @@ var __assign = (this && this.__assign) || Object.assign || function(t) {
     return t;
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-var validity_1 = __webpack_require__(3);
+var validity_1 = __webpack_require__(0);
 /**
  * @description Хранилище информации, необходимой для работы валидаторов.
  * Хранит сами валидаторы, созависимые поля и результаты валидации
@@ -264,37 +284,6 @@ var ValidateRelationStore = (function () {
     return ValidateRelationStore;
 }());
 exports.ValidateRelationStore = ValidateRelationStore;
-
-
-/***/ }),
-/* 3 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-Object.defineProperty(exports, "__esModule", { value: true });
-/**
- * @description Хранилище данных о валидности полей с вспомогательным методом проверки на полную валидность
- */
-var Validity = (function () {
-    function Validity() {
-    }
-    Validity.prototype.isFullValid = function () {
-        for (var _i = 0, _a = Object.keys(this.validity); _i < _a.length; _i++) {
-            var fieldKey = _a[_i];
-            var fieldValidity = this.validity[fieldKey];
-            for (var _b = 0, _c = Object.keys(fieldValidity); _b < _c.length; _b++) {
-                var validityKey = _c[_b];
-                if (!fieldValidity[validityKey]) {
-                    return false;
-                }
-            }
-        }
-        return true;
-    };
-    return Validity;
-}());
-exports.Validity = Validity;
 
 
 /***/ })

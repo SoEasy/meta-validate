@@ -2,7 +2,6 @@
 
 export function ValidationTrigger<T>(): any;
 export function Validate<T>(validators: IMVValidators<T>, validateWith?: Array<string>): any;
-export function isFullValid(validity: MVValidity): boolean;
 
 /**
     * @description Тип для описания валидности полей класса T.
@@ -31,5 +30,14 @@ export interface IMVValidators<T> {
     */
 export interface ReceiveValidity {
         receiveValidity(validity: MVValidity): void;
+}
+
+/**
+  * @description Хранилище данных о валидности полей с вспомогательным методом проверки на полную валидность
+  */
+export class Validity {
+    validity: MVValidity;
+    errors: MVValidity;
+    isFullValid(): boolean;
 }
 
