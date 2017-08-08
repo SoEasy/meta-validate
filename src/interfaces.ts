@@ -1,4 +1,5 @@
 import { Validity } from './validity';
+import { Subject } from 'rxjs';
 
 /**
  * @description Тип для описания валидности полей класса T.
@@ -30,5 +31,8 @@ export interface IMVValidators<T> {
  * @description Интерфейс, который по хорошему должен реализовать класс, принимающий ошибки
  */
 export interface ReceiveValidity {
-    receiveValidity(validity: Validity): void;
+    /**
+     * @description Обсервер, в который будут валиться ошибки
+     */
+    validity: Subject<Validity>;
 }

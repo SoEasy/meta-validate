@@ -73,7 +73,7 @@ function makeDecorator<T>(
                     const relatedKeyErrors = runValidators(relatedFieldValue, relatedValidators, _this);
                     existValidateMetadata.setValidityForField(relatedField, relatedKeyErrors);
                 }
-                _this.receiveValidity(existValidateMetadata.getErrors());
+                _this.validity.next(existValidateMetadata.getErrors());
             }
         };
         Object.defineProperty(target, propertyKey, descriptor);
