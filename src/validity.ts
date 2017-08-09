@@ -7,7 +7,6 @@ export class Validity {
     errors: MVValidity = {};
 
     private static allFieldsIsFalse(obj: any, ignoreFields: Array<string> = [], currentChain: string = ''): boolean {
-        console.log('currentChain', currentChain);
         for (const fieldKey of Object.keys(obj)) {
             const value = obj[fieldKey];
             const chainedCurrentField = currentChain ? `${currentChain}.${fieldKey}` : fieldKey;
