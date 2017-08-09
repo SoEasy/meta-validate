@@ -59,7 +59,6 @@ function makeDecorator<T>(
             if (newVal !== currentVal) {
                 const validateKeyMetadata = (Reflect as any).getMetadata(VALIDATE_FIELDS_KEY, target);
                 const fieldValidators = existValidateMetadata.getValidators(propertyKey);
-                console.log('in validation decorator');
                 // Валидация самого поля
                 if (validationNeeded) {
                     const currentKeyErrors = runValidators(newVal, fieldValidators, _this);
