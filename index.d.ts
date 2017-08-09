@@ -45,6 +45,6 @@ export interface ReceiveValidity {
   */
 export class Validity {
     errors: MVValidity;
-    isFullValid(): boolean;
+    isFullValid(ignoreFields?: Array<string>): boolean;
 }
 

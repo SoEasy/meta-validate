@@ -90,10 +90,17 @@ var Validity = (function () {
     function Validity() {
         this.errors = {};
     }
-    Validity.allFieldsIsFalse = function (obj) {
+    Validity.allFieldsIsFalse = function (obj, ignoreFields, currentChain) {
+        if (ignoreFields === void 0) { ignoreFields = []; }
+        if (currentChain === void 0) { currentChain = ''; }
+        console.log('currentChain', currentChain);
         for (var _i = 0, _a = Object.keys(obj); _i < _a.length; _i++) {
             var fieldKey = _a[_i];
             var value = obj[fieldKey];
+            var chainedCurrentField = currentChain ? currentChain + "." + fieldKey : fieldKey;
+            if (ignoreFields.includes(chainedCurrentField)) {
+                continue;
+            }
             for (var _b = 0, _c = Object.keys(value); _b < _c.length; _b++) {
                 var fieldValidation = _c[_b];
                 var validationValue = value[fieldValidation];
@@ -105,7 +112,7 @@ var Validity = (function () {
                 }
                 else {
                     // validate deeper
-                    var deeperValueIsFalse = Validity.allFieldsIsFalse(value);
+                    var deeperValueIsFalse = Validity.allFieldsIsFalse(value, ignoreFields, currentChain ? currentChain + "." + fieldKey : fieldKey);
                     // if not all deeper validations is false
                     if (!deeperValueIsFalse) {
                         return false;
@@ -115,8 +122,9 @@ var Validity = (function () {
         }
         return true;
     };
-    Validity.prototype.isFullValid = function () {
-        return Validity.allFieldsIsFalse(this.errors);
+    Validity.prototype.isFullValid = function (ignoreFields) {
+        if (ignoreFields === void 0) { ignoreFields = []; }
+        return Validity.allFieldsIsFalse(this.errors, ignoreFields);
     };
     return Validity;
 }());

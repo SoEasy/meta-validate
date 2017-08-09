@@ -25,14 +25,8 @@ class TestClass {
 }
 
 const t = new TestClass();
-t.validity.subscribe(v => console.log(JSON.stringify(v), v.isFullValid()));
+t.validity.subscribe(v => console.log(JSON.stringify(v), v.isFullValid(['nestedValue'])));
 
 t.firstValue = 'bar';
 t.nestedValue.nestedFoo = 4;
-t.nestedValue.nestedFoo = 6;
-t.nestedValue.nestedFoo = 9;
-
-t.nestedValue = new NestedClass();
-t.nestedValue.nestedFoo = 7;
-t.nestedValue.nestedFoo = 6;
 console.log('Oppa!');

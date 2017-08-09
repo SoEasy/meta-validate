@@ -6,9 +6,12 @@ import {MVValidity} from './interfaces';
 export class Validity {
     errors: MVValidity = {};
 
-    private static allFieldsIsFalse(obj: any): boolean {
+    private static allFieldsIsFalse(obj: any, ignoreFields: Array<string> = [], currentChain: string = ''): boolean {
+        console.log('currentChain', currentChain);
         for (const fieldKey of Object.keys(obj)) {
             const value = obj[fieldKey];
+            const chainedCurrentField = currentChain ? `${currentChain}.${fieldKey}` : fieldKey;
+            if (ignoreFields.includes(chainedCurrentField)) { continue; }
             for (const fieldValidation of Object.keys(value)) {
                 const validationValue = value[fieldValidation];
                 // if this is real validation value - check to false
@@ -16,7 +19,11 @@ export class Validity {
                     if (validationValue) { return false; }
                 } else {
                     // validate deeper
-                    const deeperValueIsFalse = Validity.allFieldsIsFalse(value);
+                    const deeperValueIsFalse = Validity.allFieldsIsFalse(
+                        value,
+                        ignoreFields,
+                        currentChain ? `${currentChain}.${fieldKey}` : fieldKey
+                    );
                     // if not all deeper validations is false
                     if (!deeperValueIsFalse) { return false; }
                 }
@@ -25,7 +32,7 @@ export class Validity {
         return true;
     }
 
-    isFullValid(): boolean {
-        return Validity.allFieldsIsFalse(this.errors);
+    isFullValid(ignoreFields: Array<string> = []): boolean {
+        return Validity.allFieldsIsFalse(this.errors, ignoreFields);
     }
 }
