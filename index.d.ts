@@ -6,15 +6,16 @@ import { Subject } from 'rxjs';
 
 export function ValidationTrigger<T>(): any;
 export function Validate<T>(validators: IMVValidators<T>, validateWith?: Array<string>): any;
+export function ValidateNested<T extends ReceiveValidity>(validateWith?: Array<string>): any;
 
 /**
     * @description Тип для описания валидности полей класса T.
     */
 export interface MVValidity {
-        [key: string]: IMVFieldValidity;
+        [key: string]: IMVFieldValidity | MVValidity;
 }
 /**
-    * @description Интерфейс для описания набора валидностей поля
+    * @description Интерфейс для описания набора ошибок поля
     */
 export interface IMVFieldValidity {
         [key: string]: boolean;
@@ -43,7 +44,6 @@ export interface ReceiveValidity {
   * @description Хранилище данных о валидности полей с вспомогательным методом проверки на полную валидность
   */
 export class Validity {
-    validity: MVValidity;
     errors: MVValidity;
     isFullValid(): boolean;
 }

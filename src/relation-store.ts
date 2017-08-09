@@ -47,12 +47,8 @@ export class ValidateRelationStore {
         return this.validatorsStore[key] || {};
     }
 
-    setValidityForField(key: string, validity: IMVFieldValidity): void {
-        this.errorsStore.validity[key] = validity;
-        this.errorsStore.errors[key] = {};
-        for (const validityKey of Object.keys(validity)) {
-            this.errorsStore.errors[key][validityKey] = !validity[validityKey];
-        }
+    setFieldErrors(key: string, validity: IMVFieldValidity): void {
+        this.errorsStore.errors[key] = validity;
     }
 
     getErrors(): Validity {

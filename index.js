@@ -88,21 +88,35 @@ Object.defineProperty(exports, "__esModule", { value: true });
  */
 var Validity = (function () {
     function Validity() {
-        this.validity = {};
         this.errors = {};
     }
-    Validity.prototype.isFullValid = function () {
-        for (var _i = 0, _a = Object.keys(this.validity); _i < _a.length; _i++) {
+    Validity.allFieldsIsFalse = function (obj) {
+        for (var _i = 0, _a = Object.keys(obj); _i < _a.length; _i++) {
             var fieldKey = _a[_i];
-            var fieldValidity = this.validity[fieldKey];
-            for (var _b = 0, _c = Object.keys(fieldValidity); _b < _c.length; _b++) {
-                var validityKey = _c[_b];
-                if (!fieldValidity[validityKey]) {
-                    return false;
+            var value = obj[fieldKey];
+            for (var _b = 0, _c = Object.keys(value); _b < _c.length; _b++) {
+                var fieldValidation = _c[_b];
+                var validationValue = value[fieldValidation];
+                // if this is real validation value - check to false
+                if (typeof validationValue === 'boolean') {
+                    if (validationValue) {
+                        return false;
+                    }
+                }
+                else {
+                    // validate deeper
+                    var deeperValueIsFalse = Validity.allFieldsIsFalse(value);
+                    // if not all deeper validations is false
+                    if (!deeperValueIsFalse) {
+                        return false;
+                    }
                 }
             }
         }
         return true;
+    };
+    Validity.prototype.isFullValid = function () {
+        return Validity.allFieldsIsFalse(this.errors);
     };
     return Validity;
 }());
@@ -138,7 +152,8 @@ function runValidators(newVal, validators, context) {
     }
     return errors;
 }
-function makeDecorator(validationNeeded, validators, validateWith) {
+function makeDecorator(validationNeeded, validators, validateWith, nested) {
+    if (nested === void 0) { nested = false; }
     validators = validators || {};
     return function (target, propertyKey) {
         var existValidateMetadata = Reflect.getMetadata(VALIDATE_FIELDS_KEY, target) || new relation_store_1.ValidateRelationStore();
@@ -165,10 +180,11 @@ function makeDecorator(validationNeeded, validators, validateWith) {
             if (newVal !== currentVal) {
                 var validateKeyMetadata = Reflect.getMetadata(VALIDATE_FIELDS_KEY, target);
                 var fieldValidators = existValidateMetadata.getValidators(propertyKey);
+                console.log('in validation decorator');
                 // Валидация самого поля
                 if (validationNeeded) {
                     var currentKeyErrors = runValidators(newVal, fieldValidators, _this);
-                    existValidateMetadata.setValidityForField(propertyKey, currentKeyErrors);
+                    existValidateMetadata.setFieldErrors(propertyKey, currentKeyErrors);
                 }
                 // Валидация связанных полей
                 var relatedFields = validateKeyMetadata.getRelatedFields(propertyKey);
@@ -177,7 +193,13 @@ function makeDecorator(validationNeeded, validators, validateWith) {
                     var relatedValidators = existValidateMetadata.getValidators(relatedField);
                     var relatedFieldValue = _this[relatedField];
                     var relatedKeyErrors = runValidators(relatedFieldValue, relatedValidators, _this);
-                    existValidateMetadata.setValidityForField(relatedField, relatedKeyErrors);
+                    existValidateMetadata.setFieldErrors(relatedField, relatedKeyErrors);
+                }
+                if (nested && newVal.validity) {
+                    newVal.validity.subscribe(function (nestedValidity) {
+                        existValidateMetadata.setFieldErrors(propertyKey, nestedValidity.errors);
+                        _this.validity.next(existValidateMetadata.getErrors());
+                    });
                 }
                 _this.validity.next(existValidateMetadata.getErrors());
             }
@@ -194,6 +216,10 @@ function Validate(validators, validateWith) {
     return makeDecorator(true, validators, validateWith);
 }
 exports.Validate = Validate;
+function ValidateNested(validateWith) {
+    return makeDecorator(false, {}, validateWith, true);
+}
+exports.ValidateNested = ValidateNested;
 
 
 /***/ }),
@@ -206,6 +232,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 var validation_1 = __webpack_require__(1);
 exports.Validate = validation_1.Validate;
 exports.ValidationTrigger = validation_1.ValidationTrigger;
+exports.ValidateNested = validation_1.ValidateNested;
 var validity_1 = __webpack_require__(0);
 exports.Validity = validity_1.Validity;
 
@@ -270,13 +297,8 @@ var ValidateRelationStore = (function () {
     ValidateRelationStore.prototype.getValidators = function (key) {
         return this.validatorsStore[key] || {};
     };
-    ValidateRelationStore.prototype.setValidityForField = function (key, validity) {
-        this.errorsStore.validity[key] = validity;
-        this.errorsStore.errors[key] = {};
-        for (var _i = 0, _a = Object.keys(validity); _i < _a.length; _i++) {
-            var validityKey = _a[_i];
-            this.errorsStore.errors[key][validityKey] = !validity[validityKey];
-        }
+    ValidateRelationStore.prototype.setFieldErrors = function (key, validity) {
+        this.errorsStore.errors[key] = validity;
     };
     ValidateRelationStore.prototype.getErrors = function () {
         return this.errorsStore;

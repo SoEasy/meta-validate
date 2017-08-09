@@ -5,11 +5,11 @@ import { Subject } from 'rxjs';
  * @description Тип для описания валидности полей класса T.
  */
 export interface MVValidity {
-    [key: string]: IMVFieldValidity;
+    [key: string]: IMVFieldValidity | MVValidity;
 }
 
 /**
- * @description Интерфейс для описания набора валидностей поля
+ * @description Интерфейс для описания набора ошибок поля
  */
 export interface IMVFieldValidity {
     [key: string]: boolean;

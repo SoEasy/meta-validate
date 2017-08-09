@@ -1,4 +1,4 @@
-import { IMVFieldValidity, IMVValidators, MVValidator } from './interfaces';
+import { IMVFieldValidity, IMVValidators, MVValidator, ReceiveValidity } from './interfaces';
 import { ValidateRelationStore } from './relation-store';
 
 const VALIDATE_FIELDS_KEY = 'JsonNameValidateFields';
@@ -26,7 +26,8 @@ function runValidators<T>(newVal: any, validators: Array<MVValidator<T>>, contex
 function makeDecorator<T>(
     validationNeeded: boolean,
     validators?: IMVValidators<T>,
-    validateWith?: Array<string>
+    validateWith?: Array<string>,
+    nested: boolean = false
 ): any {
     validators = validators || {};
     return (target: T, propertyKey: keyof T): PropertyDescriptor => {
@@ -58,11 +59,11 @@ function makeDecorator<T>(
             if (newVal !== currentVal) {
                 const validateKeyMetadata = (Reflect as any).getMetadata(VALIDATE_FIELDS_KEY, target);
                 const fieldValidators = existValidateMetadata.getValidators(propertyKey);
-
+                console.log('in validation decorator');
                 // Валидация самого поля
                 if (validationNeeded) {
                     const currentKeyErrors = runValidators(newVal, fieldValidators, _this);
-                    existValidateMetadata.setValidityForField(propertyKey, currentKeyErrors);
+                    existValidateMetadata.setFieldErrors(propertyKey, currentKeyErrors);
                 }
 
                 // Валидация связанных полей
@@ -71,8 +72,18 @@ function makeDecorator<T>(
                     const relatedValidators = existValidateMetadata.getValidators(relatedField);
                     const relatedFieldValue = _this[relatedField];
                     const relatedKeyErrors = runValidators(relatedFieldValue, relatedValidators, _this);
-                    existValidateMetadata.setValidityForField(relatedField, relatedKeyErrors);
+                    existValidateMetadata.setFieldErrors(relatedField, relatedKeyErrors);
                 }
+
+                if (nested && (newVal as any).validity) {
+                    (newVal as any).validity.subscribe(
+                        nestedValidity => {
+                            existValidateMetadata.setFieldErrors(propertyKey, nestedValidity.errors);
+                            _this.validity.next(existValidateMetadata.getErrors());
+                        }
+                    );
+                }
+
                 _this.validity.next(existValidateMetadata.getErrors());
             }
         };
@@ -87,4 +98,8 @@ export function ValidationTrigger<T>(): any {
 
 export function Validate<T>(validators: IMVValidators<T>, validateWith?: Array<string>): any {
     return makeDecorator<T>(true, validators, validateWith);
+}
+
+export function ValidateNested<T extends ReceiveValidity>(validateWith?: Array<string>): any {
+    return makeDecorator<T>(false, {}, validateWith, true);
 }
