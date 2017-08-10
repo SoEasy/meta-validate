@@ -175,9 +175,13 @@ function makeDecorator(validationNeeded, validators, validateWith, nested) {
             configurable: true,
             enumerable: true
         };
-        var value;
-        var originalGet = descriptor.get || (function () { return value; });
-        var originalSet = descriptor.set || (function (val) { return (value = val); });
+        var wm = new WeakMap();
+        var originalGet = descriptor.get || function () {
+            return wm.get(this);
+        };
+        var originalSet = descriptor.set || function (val) {
+            wm.set(this, val);
+        };
         descriptor.get = originalGet;
         descriptor.set = function (newVal) {
             // tslint:disable-next-line

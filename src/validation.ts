@@ -47,9 +47,15 @@ function makeDecorator<T>(
                 enumerable: true
             };
 
-        let value: T;
-        const originalGet = descriptor.get || ((): T => value);
-        const originalSet = descriptor.set || ((val): void => (value = val));
+        const wm = new WeakMap<any, T>();
+
+        const originalGet = descriptor.get || function(): T | undefined {
+            return wm.get(this as any);
+        };
+        const originalSet = descriptor.set || function(val: T): void {
+            wm.set(this, val);
+        };
+
         descriptor.get = originalGet;
         descriptor.set = function(newVal: T): void {
             // tslint:disable-next-line

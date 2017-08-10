@@ -24,9 +24,14 @@ class ValidationClass {
 
             (Reflect as any).defineMetadata('mv', this.prebuiltValidators, target);
 
-            let value: any;
-            const originalGet = descriptor.get || ((): any => value);
-            const originalSet = descriptor.set || ((val): void => (value = val));
+            const wm = new WeakMap<any, number>();
+
+            const originalGet = descriptor.get || function(): any {
+                return wm.get(this);
+            };
+            const originalSet = descriptor.set || function(val: any): void {
+                wm.set(this, val);
+            };
             descriptor.get = originalGet;
             descriptor.set = function(newVal: any): void {
                 // tslint:disable-next-line
@@ -98,10 +103,26 @@ class MVNumber extends ValidationClass {
 class TestClass {
     @ValidateNumber().required().gte(2).lte(5).integer().make()
     fieldOne: number = 0;
+
+    // get fieldOne(): number {
+    //     return this._fieldOne;
+    // }
+    // set fieldOne(value: number) {
+    //     this._fieldOne = value;
+    // }
+
+    control: number = 10;
 }
 
 const t = new TestClass();
+t.control = 11;
 t.fieldOne = 1;
+console.log(t, t.fieldOne);
+
+const t2 = new TestClass();
+t2.control = 12;
+t2.fieldOne = 3;
+console.log(t, t2);
 
 // class NestedClass {
 //     validity: Subject<any> = new Subject();

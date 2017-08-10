@@ -119,9 +119,13 @@ var ValidationClass = (function () {
                 enumerable: true
             };
             Reflect.defineMetadata('mv', _this.prebuiltValidators, target);
-            var value;
-            var originalGet = descriptor.get || (function () { return value; });
-            var originalSet = descriptor.set || (function (val) { return (value = val); });
+            var wm = new WeakMap();
+            var originalGet = descriptor.get || function () {
+                return wm.get(this);
+            };
+            var originalSet = descriptor.set || function (val) {
+                wm.set(this, val);
+            };
             descriptor.get = originalGet;
             descriptor.set = function (newVal) {
                 // tslint:disable-next-line
@@ -187,6 +191,13 @@ var MVNumber = (function (_super) {
 var TestClass = (function () {
     function TestClass() {
         this.fieldOne = 0;
+        // get fieldOne(): number {
+        //     return this._fieldOne;
+        // }
+        // set fieldOne(value: number) {
+        //     this._fieldOne = value;
+        // }
+        this.control = 10;
     }
     __decorate([
         ValidateNumber().required().gte(2).lte(5).integer().make(),
@@ -195,7 +206,13 @@ var TestClass = (function () {
     return TestClass;
 }());
 var t = new TestClass();
+t.control = 11;
 t.fieldOne = 1;
+console.log(t, t.fieldOne);
+var t2 = new TestClass();
+t2.control = 12;
+t2.fieldOne = 3;
+console.log(t, t2);
 // class NestedClass {
 //     validity: Subject<any> = new Subject();
 //
