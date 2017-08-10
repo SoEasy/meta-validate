@@ -99,7 +99,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 // import { Validity } from '../index';
 __webpack_require__(2);
 // import { Subject } from 'rxjs';
-// import { Validate } from './../index';
+// import { Validate, ValidationTrigger } from './../index';
 // type IChainedDecorator {
 //     (propertyKey: string, target: any): TypedPropertyDescriptor<any>;
 // }
@@ -107,6 +107,9 @@ var ValidationClass = (function () {
     function ValidationClass() {
         this.prebuiltValidators = {};
     }
+    ValidationClass.prototype.required = function () {
+        console.log('required');
+    };
     ValidationClass.prototype.make = function () {
         var _this = this;
         return function (target, propertyKey) {
@@ -144,7 +147,7 @@ var MVNumber = (function (_super) {
         return _super !== null && _super.apply(this, arguments) || this;
     }
     MVNumber.prototype.required = function () {
-        this.prebuiltValidators['required'] = function (v) { return !v; };
+        _super.prototype.required.call(this);
         return this;
     };
     MVNumber.prototype.lt = function (arg) {
@@ -206,19 +209,22 @@ t.fieldOne = 1;
 //     validity: Subject<any> = new Subject();
 //
 //     @Validate<string>({
-//         length: (value): boolean => value.length !== 3
-//     })
+//         length: (value, instance): boolean => instance.secondValue === 'a' ? true : value.length !== 3
+//     }, ['secondValue'])
 //     firstValue: string = '';
+//
+//     @ValidationTrigger()
+//     secondValue: string = '';
 //
 //     // @ValidateNested()
 //     // nestedValue: NestedClass = new NestedClass();
 // }
 //
 // const t = new TestClass();
-// t.validity.subscribe(v => console.log(JSON.stringify(v), v.isFullValid(['nestedValue'])));
-//
+// t.validity.subscribe(v => console.log(JSON.stringify(v)));
 // t.firstValue = 'bar';
-// t.nestedValue.nestedFoo = 4;
+// t.secondValue = 'a';
+// t.secondValue = 'b';
 // console.log('Oppa!');
 
 

@@ -93,7 +93,6 @@ var Validity = (function () {
     Validity.allFieldsIsFalse = function (obj, ignoreFields, currentChain) {
         if (ignoreFields === void 0) { ignoreFields = []; }
         if (currentChain === void 0) { currentChain = ''; }
-        console.log('currentChain', currentChain);
         for (var _i = 0, _a = Object.keys(obj); _i < _a.length; _i++) {
             var fieldKey = _a[_i];
             var value = obj[fieldKey];
@@ -186,30 +185,29 @@ function makeDecorator(validationNeeded, validators, validateWith, nested) {
             var currentVal = originalGet.call(_this);
             originalSet.call(_this, newVal);
             if (newVal !== currentVal) {
-                var validateKeyMetadata = Reflect.getMetadata(VALIDATE_FIELDS_KEY, target);
+                var validateKeyMetadata_1 = Reflect.getMetadata(VALIDATE_FIELDS_KEY, target);
                 var fieldValidators = existValidateMetadata.getValidators(propertyKey);
-                console.log('in validation decorator');
                 // Валидация самого поля
                 if (validationNeeded) {
                     var currentKeyErrors = runValidators(newVal, fieldValidators, _this);
                     existValidateMetadata.setFieldErrors(propertyKey, currentKeyErrors);
                 }
                 // Валидация связанных полей
-                var relatedFields = validateKeyMetadata.getRelatedFields(propertyKey);
+                var relatedFields = validateKeyMetadata_1.getRelatedFields(propertyKey);
                 for (var _i = 0, relatedFields_1 = relatedFields; _i < relatedFields_1.length; _i++) {
                     var relatedField = relatedFields_1[_i];
-                    var relatedValidators = existValidateMetadata.getValidators(relatedField);
+                    var relatedValidators = validateKeyMetadata_1.getValidators(relatedField);
                     var relatedFieldValue = _this[relatedField];
                     var relatedKeyErrors = runValidators(relatedFieldValue, relatedValidators, _this);
-                    existValidateMetadata.setFieldErrors(relatedField, relatedKeyErrors);
+                    validateKeyMetadata_1.setFieldErrors(relatedField, relatedKeyErrors);
                 }
                 if (nested && newVal.validity) {
                     newVal.validity.subscribe(function (nestedValidity) {
-                        existValidateMetadata.setFieldErrors(propertyKey, nestedValidity.errors);
-                        _this.validity.next(existValidateMetadata.getErrors());
+                        validateKeyMetadata_1.setFieldErrors(propertyKey, nestedValidity.errors);
+                        _this.validity.next(validateKeyMetadata_1.getErrors());
                     });
                 }
-                _this.validity.next(existValidateMetadata.getErrors());
+                _this.validity.next(validateKeyMetadata_1.getErrors());
             }
         };
         Object.defineProperty(target, propertyKey, descriptor);

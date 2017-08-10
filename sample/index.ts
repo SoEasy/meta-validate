@@ -1,7 +1,7 @@
 // import { Validity } from '../index';
 import 'reflect-metadata';
 // import { Subject } from 'rxjs';
-// import { Validate } from './../index';
+// import { Validate, ValidationTrigger } from './../index';
 
 // type IChainedDecorator {
 //     (propertyKey: string, target: any): TypedPropertyDescriptor<any>;
@@ -9,6 +9,10 @@ import 'reflect-metadata';
 
 class ValidationClass {
     protected prebuiltValidators: Record<string, (...args: Array<any>) => boolean> = {};
+
+    protected required(): void {
+        console.log('required');
+    }
 
     make(): any {
         return (target: any, propertyKey: string): TypedPropertyDescriptor<any> => {
@@ -46,7 +50,7 @@ function ValidateNumber(): MVNumber {
 
 class MVNumber extends ValidationClass {
     required(): MVNumber {
-        this.prebuiltValidators['required'] = (v: any): boolean => !v;
+        super.required();
         return this;
     }
 
@@ -112,17 +116,20 @@ t.fieldOne = 1;
 //     validity: Subject<any> = new Subject();
 //
 //     @Validate<string>({
-//         length: (value): boolean => value.length !== 3
-//     })
+//         length: (value, instance): boolean => instance.secondValue === 'a' ? true : value.length !== 3
+//     }, ['secondValue'])
 //     firstValue: string = '';
+//
+//     @ValidationTrigger()
+//     secondValue: string = '';
 //
 //     // @ValidateNested()
 //     // nestedValue: NestedClass = new NestedClass();
 // }
 //
 // const t = new TestClass();
-// t.validity.subscribe(v => console.log(JSON.stringify(v), v.isFullValid(['nestedValue'])));
-//
+// t.validity.subscribe(v => console.log(JSON.stringify(v)));
 // t.firstValue = 'bar';
-// t.nestedValue.nestedFoo = 4;
+// t.secondValue = 'a';
+// t.secondValue = 'b';
 // console.log('Oppa!');

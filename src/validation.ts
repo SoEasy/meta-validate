@@ -68,22 +68,22 @@ function makeDecorator<T>(
                 // Валидация связанных полей
                 const relatedFields = validateKeyMetadata.getRelatedFields(propertyKey);
                 for (const relatedField of relatedFields) {
-                    const relatedValidators = existValidateMetadata.getValidators(relatedField);
+                    const relatedValidators = validateKeyMetadata.getValidators(relatedField);
                     const relatedFieldValue = _this[relatedField];
                     const relatedKeyErrors = runValidators(relatedFieldValue, relatedValidators, _this);
-                    existValidateMetadata.setFieldErrors(relatedField, relatedKeyErrors);
+                    validateKeyMetadata.setFieldErrors(relatedField, relatedKeyErrors);
                 }
 
                 if (nested && (newVal as any).validity) {
                     (newVal as any).validity.subscribe(
                         nestedValidity => {
-                            existValidateMetadata.setFieldErrors(propertyKey, nestedValidity.errors);
-                            _this.validity.next(existValidateMetadata.getErrors());
+                            validateKeyMetadata.setFieldErrors(propertyKey, nestedValidity.errors);
+                            _this.validity.next(validateKeyMetadata.getErrors());
                         }
                     );
                 }
 
-                _this.validity.next(existValidateMetadata.getErrors());
+                _this.validity.next(validateKeyMetadata.getErrors());
             }
         };
         Object.defineProperty(target, propertyKey, descriptor);
