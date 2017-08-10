@@ -188,6 +188,9 @@ var MVNumber = (function (_super) {
     };
     return MVNumber;
 }(ValidationClass));
+function logType(target, propertyKey) {
+    console.log(propertyKey + " type is " + Reflect.getMetadata('design:type', target, propertyKey).name);
+}
 var TestClass = (function () {
     function TestClass() {
         this.fieldOne = 0;
@@ -198,11 +201,28 @@ var TestClass = (function () {
         //     this._fieldOne = value;
         // }
         this.control = 10;
+        this.bar = { qo: 2 };
     }
     __decorate([
         ValidateNumber().required().gte(2).lte(5).integer().make(),
         __metadata("design:type", Number)
     ], TestClass.prototype, "fieldOne", void 0);
+    __decorate([
+        logType,
+        __metadata("design:type", Number)
+    ], TestClass.prototype, "control", void 0);
+    __decorate([
+        logType,
+        __metadata("design:type", String)
+    ], TestClass.prototype, "foo", void 0);
+    __decorate([
+        logType,
+        __metadata("design:type", Object)
+    ], TestClass.prototype, "bar", void 0);
+    __decorate([
+        logType,
+        __metadata("design:type", TestClass)
+    ], TestClass.prototype, "baz", void 0);
     return TestClass;
 }());
 var t = new TestClass();

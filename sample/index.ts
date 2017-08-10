@@ -100,6 +100,10 @@ class MVNumber extends ValidationClass {
     }
 }
 
+function logType(target: any, propertyKey: string): void {
+    console.log(`${propertyKey} type is ${(Reflect as any).getMetadata('design:type', target, propertyKey).name}`);
+}
+
 class TestClass {
     @ValidateNumber().required().gte(2).lte(5).integer().make()
     fieldOne: number = 0;
@@ -111,7 +115,17 @@ class TestClass {
     //     this._fieldOne = value;
     // }
 
+    @logType
     control: number = 10;
+
+    @logType
+    foo: string;
+
+    @logType
+    bar: any = {qo: 2};
+
+    @logType
+    baz: TestClass;
 }
 
 const t = new TestClass();
