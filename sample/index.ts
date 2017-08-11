@@ -14,6 +14,10 @@ class ValidationClass {
         console.log('required');
     }
 
+    protected when(): void {
+        console.log('validate previous only when');
+    }
+
     make(): any {
         return (target: any, propertyKey: string): TypedPropertyDescriptor<any> => {
             console.log('some logic', this);
@@ -53,29 +57,43 @@ function ValidateNumber(): MVNumber {
     return new MVNumber();
 }
 
+class MVDate extends ValidationClass {
+    min(): void {
+        console.log('min date');
+    }
+
+    max(): void {
+        console.log('max date');
+    }
+
+    greaterThenBy(instanceKey: string, value: Date): void {
+        console.log(`value must be greater then ${instanceKey} by ${value}`);
+    }
+}
+
 class MVNumber extends ValidationClass {
     required(): MVNumber {
         super.required();
         return this;
     }
 
-    lt(arg: number): MVNumber {
+    min(arg: number): MVNumber {
         this.prebuiltValidators['min'] = (v: number): boolean => !v || v < arg;
         return this;
     }
 
-    lte(arg: number): MVNumber {
-        this.prebuiltValidators['min'] = (v: number): boolean => !v || v <= arg;
+    greater(arg: number): MVNumber {
+        this.prebuiltValidators['greater'] = (v: number): boolean => !v || v <= arg;
         return this;
     }
 
-    gt(arg: number): MVNumber {
+    max(arg: number): MVNumber {
         this.prebuiltValidators['max'] = (v: number): boolean => !v || v > arg;
         return this;
     }
 
-    gte(arg: number): MVNumber {
-        this.prebuiltValidators['max'] = (v: number): boolean => !v || v > arg;
+    less(arg: number): MVNumber {
+        this.prebuiltValidators['less'] = (v: number): boolean => !v || v >= arg;
         return this;
     }
 
@@ -105,7 +123,7 @@ function logType(target: any, propertyKey: string): void {
 }
 
 class TestClass {
-    @ValidateNumber().required().gte(2).lte(5).integer().make()
+    @ValidateNumber().required().min(2).less(5).integer().make()
     fieldOne: number = 0;
 
     // get fieldOne(): number {
