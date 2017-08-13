@@ -1,4 +1,4 @@
-import {MVValidity} from './interfaces';
+import { MVValidity } from './interfaces';
 
 /**
  * @description Хранилище данных о валидности полей с вспомогательным методом проверки на полную валидность

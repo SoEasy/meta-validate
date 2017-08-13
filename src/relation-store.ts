@@ -1,18 +1,54 @@
-import { IMVFieldValidity, IMVValidators } from './interfaces';
+import { MVValidator, MVFieldValidity, VALIDATE_FIELDS_KEY } from './interfaces';
 import { Validity } from './validity';
+import 'reflect-metadata';
 
 /**
  * @description Хранилище информации, необходимой для работы валидаторов.
  * Хранит сами валидаторы, созависимые поля и результаты валидации
  */
 export class ValidateRelationStore {
+    /**
+     * @description Хранилище зависимостей полей. Ключ - поле, значение - поля, которые надо провалидировать при его изменении
+     */
     private fieldsRelationsStore: Record<string, Array<string>> = {};
-    private validatorsStore: Record<string, IMVValidators<any>> = {};
+
+    /**
+     * @description Хранилище валидаторов для поля. Ключ - поле, значение - объект с валидаторами
+     */
+    private validatorsStore: Record<string, Record<string, MVValidator>> = {};
+
+    /**
+     * @description Хранилище условий, при которых поле нужно валидировать. Ключ - поле, значение - функция
+     */
+    private skipConditions: Record<string, (instance: any) => boolean> = {};
+
+    private validatorConditions: Record<string, Record<string, (instance: any) => boolean>> = {};
+
+    /**
+     * @description Хранилище вложенных полей, чтобы лишний раз не дергать метадату при валидации зависимых полей
+     */
+    private nestedFields: Array<string> = [];
+
+    /**
+     * @description Хранилище ошибок валидации
+     */
     private errorsStore: Validity = new Validity();
+
+    addValidators(key: string, validators: Record<string, MVValidator>): void {
+        this.validatorsStore[key] = { ...this.validatorsStore[key], ...validators };
+        const existsValidators = this.validatorsStore[key] || {};
+        for (const invalidKey of Object.keys(validators)) {
+            existsValidators[invalidKey] = validators[invalidKey];
+        }
+    }
+
+    addNestedField(field: string): void {
+        this.nestedFields.push(field);
+    }
 
     addValidateRelation(key: string, fields: Array<string>): void {
         if (!fields || !fields.length) {
-            console.warn(`No related fields specified for validation field ${key}`);
+            return;
         }
         const passedTypes: Array<string> = fields.map(f => typeof f);
         if (new Set(passedTypes).size !== 1) {
@@ -31,24 +67,75 @@ export class ValidateRelationStore {
         }
     }
 
-    getRelatedFields(key: string): Array<string> {
-        return this.fieldsRelationsStore[key] || [];
+    setupSkipCondition(field: string, condition: (instance: any) => boolean): void {
+        this.skipConditions[field] = condition;
     }
 
-    addValidators(key: string, validators: IMVValidators<any>): void {
-        this.validatorsStore[key] = { ...this.validatorsStore[key], ...validators };
-        const existsValidators = this.validatorsStore[key] || {};
-        for (const invalidKey of Object.keys(validators)) {
-            existsValidators[invalidKey] = validators[invalidKey];
+    setupValidatorConditions(field: string, conditions: Record<string, (instance: any) => boolean>): void {
+        this.validatorConditions[field] = conditions;
+    }
+
+    validateField(field: string, newVal: any, instance: any): void {
+        const errors: MVFieldValidity = {};
+
+        const isNestedField = this.nestedFields.includes(field);
+        if (isNestedField) {
+            return this.validateNestedField(newVal);
+        }
+
+        const validators = this.getValidators(field);
+        const skipValidation = this.skipConditions[field]
+            ? this.skipConditions[field](instance)
+            : false;
+
+        if (validators) {
+            for (const validationErrorKey of Object.keys(validators)) {
+                const skipValidator = this.validatorConditions[field][validationErrorKey]
+                    ? this.validatorConditions[field][validationErrorKey](instance)
+                    : false;
+                if (skipValidation || skipValidator) {
+                    errors[validationErrorKey] = false;
+                    continue;
+                }
+                const validity = validators[validationErrorKey](newVal, instance);
+                errors[validationErrorKey] = validity;
+            }
+        }
+        this.setFieldErrors(field, errors);
+    }
+
+    validateReleatedFields(field: string, instance: any): void {
+        const relatedFields = this.getRelatedFields(field);
+        for (const relatedField of relatedFields) {
+            const relatedFieldValue = instance[relatedField];
+            const isNestedField = this.nestedFields.includes(relatedField);
+            if (isNestedField) {
+                this.validateNestedField(relatedFieldValue);
+            } else {
+                this.validateField(relatedField, relatedFieldValue, instance);
+            }
         }
     }
 
-    getValidators(key: string): IMVValidators<any> {
-        return this.validatorsStore[key] || {};
+    // TODO возможно этого тут быть не должно
+    private validateNestedField(value: any): void {
+        const nestedMetadata: ValidateRelationStore = (Reflect as any).getMetadata(VALIDATE_FIELDS_KEY, Object.getPrototypeOf(value));
+        if (!nestedMetadata) { return; }
+        for (const nestedField of Object.keys(nestedMetadata.validatorsStore)) {
+            nestedMetadata.validateField(nestedField, value[nestedField], value);
+        }
     }
 
-    setFieldErrors(key: string, validity: IMVFieldValidity): void {
-        this.errorsStore.errors[key] = validity;
+    private getRelatedFields(key: string): Array<string> {
+        return this.fieldsRelationsStore[key] || [];
+    }
+
+    private getValidators(field: string): Record<string, MVValidator> {
+        return this.validatorsStore[field] || {};
+    }
+
+    private setFieldErrors(field: string, validity: MVFieldValidity): void {
+        this.errorsStore.errors[field] = validity;
     }
 
     getErrors(): Validity {

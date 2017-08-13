@@ -4,32 +4,27 @@
 
 import { Subject } from 'rxjs';
 
-export function ValidationTrigger<T>(): any;
-export function Validate<T>(validators: IMVValidators<T>, validateWith?: Array<string>): any;
-export function ValidateNested<T extends ReceiveValidity>(validateWith?: Array<string>): any;
-
+export const VALIDATE_FIELDS_KEY = "JsonNameValidateFields";
+export interface IBaseDecoratorType {
+        required: () => IBaseDecoratorType;
+        with: (fields: Array<string>) => IBaseDecoratorType;
+        if: (condition: (instance: any) => boolean) => IBaseDecoratorType;
+        skip: (condition: (instance: any) => boolean) => IBaseDecoratorType;
+        validators: Record<string, MVValidator>;
+}
 /**
     * @description Тип для описания валидности полей класса T.
     */
 export interface MVValidity {
-        [key: string]: IMVFieldValidity | MVValidity;
+        [key: string]: MVFieldValidity | MVValidity;
 }
-/**
-    * @description Интерфейс для описания набора ошибок поля
-    */
-export interface IMVFieldValidity {
+export interface MVFieldValidity {
         [key: string]: boolean;
 }
 /**
     * @description Тип функции-валидатора
     */
-export type MVValidator<T> = (value: T, context: any) => boolean;
-/**
-    * @description Набор валидаторов поля для key-критериев
-    */
-export interface IMVValidators<T> {
-        [key: string]: MVValidator<T>;
-}
+export type MVValidator<ValueType = any, InstanceType = any> = (value: ValueType, instance?: InstanceType) => boolean;
 /**
     * @description Интерфейс, который по хорошему должен реализовать класс, принимающий ошибки
     */
@@ -46,5 +41,67 @@ export interface ReceiveValidity {
 export class Validity {
     errors: MVValidity;
     isFullValid(ignoreFields?: Array<string>): boolean;
+}
+
+export class MetaValidate {
+    static Number<T>(): MVNumber<T>;
+    static String<T>(): MVString<T>;
+    static Trigger(): any;
+    static Nested(): any;
+}
+
+export type MVNumberArg<T> = number | ((instance: T) => number);
+export class MVNumber<T> extends MVBase implements IBaseDecoratorType {
+    required(): MVNumber<T>;
+    if(condition: (i: any) => boolean): MVNumber<T>;
+    skip(condition: (i: T) => boolean): MVNumber<T>;
+    with(fields: Array<string>): MVNumber<T>;
+    convert(): MVNumber<T>;
+    min(arg: MVNumberArg<T>): MVNumber<T>;
+    greater(arg: MVNumberArg<T>): MVNumber<T>;
+    max(arg: MVNumberArg<T>): MVNumber<T>;
+    less(arg: MVNumberArg<T>): MVNumber<T>;
+    integer(): MVNumber<T>;
+    negative(): MVNumber<T>;
+    positive(): MVNumber<T>;
+    divideBy(arg: MVNumberArg<T>): MVNumber<T>;
+}
+
+export type MVStringArg<ArgType, InstanceType> = ArgType | ((instance: InstanceType) => ArgType);
+export class MVString<T> extends MVBase implements IBaseDecoratorType {
+        required(): MVString<T>;
+        if(condition: (i: any) => boolean): MVString<T>;
+        when(condition: (i: T) => boolean): MVString<T>;
+        with(fields: Array<string>): MVString<T>;
+        convert(): MVString<T>;
+        minLength(arg: MVStringArg<number, T>): MVString<T>;
+        maxLength(arg: MVStringArg<number, T>): MVString<T>;
+        length(arg: MVStringArg<number, T>): MVString<T>;
+        regex(pattern: MVStringArg<RegExp, T>, name: string): MVString<T>;
+        /**
+            * @description Allow only a-z A-Z 0-9
+            */
+        alphanum(): MVString<T>;
+        /**
+            * @description Allow only a-z A-Z 0-9 - _
+            */
+        token(): MVString<T>;
+}
+
+export class MVBase implements IBaseDecoratorType {
+    protected prebuiltValidators: Record<string, MVValidator>;
+    lastValidator: string;
+    validateWith: Array<string>;
+    skipCondition: (i: any) => boolean;
+    validatorConditions: Record<string, (i: any) => boolean>;
+    converters: Array<(value: any) => any>;
+    isTrigger: boolean;
+    isNested: boolean;
+    required(): MVBase;
+    if(condition: (i: any) => boolean): MVBase;
+    skip(condition: (i: any) => boolean): MVBase;
+    with(fields: Array<string>): MVBase;
+    readonly validators: Record<string, MVValidator>;
+    make(): any;
 }
 
