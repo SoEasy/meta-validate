@@ -14,12 +14,12 @@ export class MetaValidate {
     static Trigger(): any {
         const retVal = new MVBase();
         retVal.isTrigger = true;
-        return retVal.make;
+        return retVal;
     }
 
     static Nested(): any {
         const retVal = new MVBase();
         retVal.isNested = true;
-        return retVal.make;
+        return retVal;
     }
 }

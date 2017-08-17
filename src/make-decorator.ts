@@ -21,6 +21,10 @@ export function makeDecorator<T>(
 
         existValidateMetadata.setupValidatorConditions(propertyKey, validationConfig.validatorConditions);
 
+        if (validationConfig.isNested) {
+            existValidateMetadata.addNestedField(propertyKey);
+        }
+
         const descriptor = Object.getOwnPropertyDescriptor(target, propertyKey) || {
             configurable: true,
             enumerable: true
@@ -53,16 +57,16 @@ export function makeDecorator<T>(
                 // Валидация связанных полей
                 validateKeyMetadata.validateReleatedFields(propertyKey, this);
 
-                if (validateKeyMetadata.isNested && (newVal as any).validity) {
-                    (newVal as any).validity.subscribe(
+                if (validationConfig.isNested && (newVal as any).validity$) {
+                    (newVal as any).validity$.subscribe(
                         nestedValidity => {
                             validateKeyMetadata.setFieldErrors(propertyKey, nestedValidity.errors);
-                            this.validity.next(validateKeyMetadata.getErrors());
+                            this.validity$.next(validateKeyMetadata.getErrors());
                         }
                     );
                 }
 
-                this.validity.next(validateKeyMetadata.getErrors());
+                this.validity$.next(validateKeyMetadata.getErrors());
             }
         };
         Object.defineProperty(target, propertyKey, descriptor);

@@ -32,7 +32,7 @@ export interface ReceiveValidity {
         /**
             * @description Обсервер, в который будут валиться ошибки
             */
-        validity: Subject<Validity>;
+        validity$: Subject<Validity>;
 }
 
 /**
@@ -71,7 +71,7 @@ export type MVStringArg<ArgType, InstanceType> = ArgType | ((instance: InstanceT
 export class MVString<T> extends MVBase implements IBaseDecoratorType {
         required(): MVString<T>;
         if(condition: (i: any) => boolean): MVString<T>;
-        when(condition: (i: T) => boolean): MVString<T>;
+        skip(condition: (i: T) => boolean): MVString<T>;
         with(fields: Array<string>): MVString<T>;
         convert(): MVString<T>;
         minLength(arg: MVStringArg<number, T>): MVString<T>;

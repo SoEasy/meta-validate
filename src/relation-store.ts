@@ -119,6 +119,7 @@ export class ValidateRelationStore {
 
     // TODO возможно этого тут быть не должно
     private validateNestedField(value: any): void {
+        if (!value) { return; }
         const nestedMetadata: ValidateRelationStore = (Reflect as any).getMetadata(VALIDATE_FIELDS_KEY, Object.getPrototypeOf(value));
         if (!nestedMetadata) { return; }
         for (const nestedField of Object.keys(nestedMetadata.validatorsStore)) {

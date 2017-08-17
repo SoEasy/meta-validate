@@ -1348,12 +1348,12 @@ var MetaValidate = (function () {
     MetaValidate.Trigger = function () {
         var retVal = new base_1.MVBase();
         retVal.isTrigger = true;
-        return retVal.make;
+        return retVal;
     };
     MetaValidate.Nested = function () {
         var retVal = new base_1.MVBase();
         retVal.isNested = true;
-        return retVal.make;
+        return retVal;
     };
     return MetaValidate;
 }());
@@ -1585,6 +1585,9 @@ function makeDecorator(validationConfig) {
         }
         existValidateMetadata.setupSkipCondition(propertyKey, validationConfig.skipCondition);
         existValidateMetadata.setupValidatorConditions(propertyKey, validationConfig.validatorConditions);
+        if (validationConfig.isNested) {
+            existValidateMetadata.addNestedField(propertyKey);
+        }
         var descriptor = Object.getOwnPropertyDescriptor(target, propertyKey) || {
             configurable: true,
             enumerable: true
@@ -1611,13 +1614,13 @@ function makeDecorator(validationConfig) {
                 }
                 // Валидация связанных полей
                 validateKeyMetadata_1.validateReleatedFields(propertyKey, this);
-                if (validateKeyMetadata_1.isNested && newVal.validity) {
-                    newVal.validity.subscribe(function (nestedValidity) {
+                if (validationConfig.isNested && newVal.validity$) {
+                    newVal.validity$.subscribe(function (nestedValidity) {
                         validateKeyMetadata_1.setFieldErrors(propertyKey, nestedValidity.errors);
-                        _this.validity.next(validateKeyMetadata_1.getErrors());
+                        _this.validity$.next(validateKeyMetadata_1.getErrors());
                     });
                 }
-                this.validity.next(validateKeyMetadata_1.getErrors());
+                this.validity$.next(validateKeyMetadata_1.getErrors());
             }
         };
         Object.defineProperty(target, propertyKey, descriptor);
@@ -1752,6 +1755,9 @@ var ValidateRelationStore = (function () {
     };
     // TODO возможно этого тут быть не должно
     ValidateRelationStore.prototype.validateNestedField = function (value) {
+        if (!value) {
+            return;
+        }
         var nestedMetadata = Reflect.getMetadata(interfaces_1.VALIDATE_FIELDS_KEY, Object.getPrototypeOf(value));
         if (!nestedMetadata) {
             return;
