@@ -105,7 +105,9 @@ field: string = null;
 
 ###Пример использования
 ```
-class Document {
+import { MetaValidate, ReceiveValidity, Validity } from 'meta-validate';
+
+class Document implements ReceiveValidity {
     validity: BehaviorSubject<Validity> = new BehaviorSubject();
 
     @MetaValidate.Trigger().make()
@@ -134,7 +136,7 @@ class Document {
     additionalDocumentNumber: string = null;
 }
 
-class Customer {
+class Customer implements ReceiveValidity {
     validity: BehaviorSubject<Validity> = new BehaviorSubject();
 
     @MetaValidate.Nested().make()
