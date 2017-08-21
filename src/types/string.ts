@@ -24,7 +24,7 @@ export class MVString<T> extends MVBase implements IBaseDecoratorType {
         return this;
     }
 
-    custom(name: string, validator: (value: number, instance: any) => boolean): MVString<T> {
+    custom(name: string, validator: (value: string, instance: any) => boolean): MVString<T> {
         super.custom(name, validator);
         return this;
     }

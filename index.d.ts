@@ -75,7 +75,7 @@ export class MVString<T> extends MVBase implements IBaseDecoratorType {
         if(condition: (i: any) => boolean): MVString<T>;
         skip(condition: (i: T) => boolean): MVString<T>;
         with(fields: Array<string>): MVString<T>;
-        custom(name: string, validator: (value: number, instance: any) => boolean): MVString<T>;
+        custom(name: string, validator: (value: string, instance: any) => boolean): MVString<T>;
         convert(): MVString<T>;
         minLength(arg: MVStringArg<number, T>): MVString<T>;
         maxLength(arg: MVStringArg<number, T>): MVString<T>;
