@@ -9,8 +9,8 @@ export class MVNumber<T> extends MVBase implements IBaseDecoratorType {
         return this;
     }
 
-    if(condition: (i: any) => boolean): MVNumber<T> {
-        super.if(condition);
+    skipIf(condition: (i: any) => boolean): MVNumber<T> {
+        super.skipIf(condition);
         return this;
     }
 

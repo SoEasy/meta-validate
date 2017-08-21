@@ -100,7 +100,7 @@ var MVBase = (function () {
         this.prebuiltValidators['required'] = function (v) { return !v; };
         return this;
     };
-    MVBase.prototype.if = function (condition) {
+    MVBase.prototype.skipIf = function (condition) {
         if (!this.lastValidator) {
             console.warn('No last validator for "if" statement');
             return this;
@@ -1819,8 +1819,8 @@ var MVNumber = (function (_super) {
         _super.prototype.required.call(this);
         return this;
     };
-    MVNumber.prototype.if = function (condition) {
-        _super.prototype.if.call(this, condition);
+    MVNumber.prototype.skipIf = function (condition) {
+        _super.prototype.skipIf.call(this, condition);
         return this;
     };
     MVNumber.prototype.skip = function (condition) {
@@ -1941,8 +1941,8 @@ var MVString = (function (_super) {
         _super.prototype.required.call(this);
         return this;
     };
-    MVString.prototype.if = function (condition) {
-        _super.prototype.if.call(this, condition);
+    MVString.prototype.skipIf = function (condition) {
+        _super.prototype.skipIf.call(this, condition);
         return this;
     };
     MVString.prototype.skip = function (condition) {

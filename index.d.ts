@@ -8,7 +8,7 @@ export const VALIDATE_FIELDS_KEY = "JsonNameValidateFields";
 export interface IBaseDecoratorType {
         required: () => IBaseDecoratorType;
         with: (fields: Array<string>) => IBaseDecoratorType;
-        if: (condition: (instance: any) => boolean) => IBaseDecoratorType;
+        skipIf: (condition: (instance: any) => boolean) => IBaseDecoratorType;
         skip: (condition: (instance: any) => boolean) => IBaseDecoratorType;
         validators: Record<string, MVValidator>;
 }
@@ -54,7 +54,7 @@ export class MetaValidate {
 export type MVNumberArg<T> = number | ((instance: T) => number);
 export class MVNumber<T> extends MVBase implements IBaseDecoratorType {
     required(): MVNumber<T>;
-    if(condition: (i: any) => boolean): MVNumber<T>;
+    skipIf(condition: (i: any) => boolean): MVNumber<T>;
     skip(condition: (i: T) => boolean): MVNumber<T>;
     with(fields: Array<string>): MVNumber<T>;
     custom(name: string, validator: (value: number, instance: any) => boolean): MVNumber<T>;
@@ -72,7 +72,7 @@ export class MVNumber<T> extends MVBase implements IBaseDecoratorType {
 export type MVStringArg<ArgType, InstanceType> = ArgType | ((instance: InstanceType) => ArgType);
 export class MVString<T> extends MVBase implements IBaseDecoratorType {
         required(): MVString<T>;
-        if(condition: (i: any) => boolean): MVString<T>;
+        skipIf(condition: (i: any) => boolean): MVString<T>;
         skip(condition: (i: T) => boolean): MVString<T>;
         with(fields: Array<string>): MVString<T>;
         custom(name: string, validator: (value: string, instance: any) => boolean): MVString<T>;
@@ -101,7 +101,7 @@ export class MVBase implements IBaseDecoratorType {
     isTrigger: boolean;
     isNested: boolean;
     required(): MVBase;
-    if(condition: (i: any) => boolean): MVBase;
+    skipIf(condition: (i: any) => boolean): MVBase;
     skip(condition: (i: any) => boolean): MVBase;
     with(fields: Array<string>): MVBase;
     custom(name: string, validator: (value: any, instance: any) => boolean): MVBase;

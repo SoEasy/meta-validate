@@ -6,7 +6,7 @@ export const VALIDATE_FIELDS_KEY = 'JsonNameValidateFields';
 export interface IBaseDecoratorType {
     required: () => IBaseDecoratorType;
     with: (fields: Array<string>) => IBaseDecoratorType;
-    if: (condition: (instance: any) => boolean) => IBaseDecoratorType;
+    skipIf: (condition: (instance: any) => boolean) => IBaseDecoratorType;
     skip: (condition: (instance: any) => boolean) => IBaseDecoratorType;
 
     validators: Record<string, MVValidator>;

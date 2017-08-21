@@ -17,7 +17,7 @@ export class MVBase implements IBaseDecoratorType {
         return this;
     }
 
-    if(condition: (i: any) => boolean): MVBase {
+    skipIf(condition: (i: any) => boolean): MVBase {
         if (!this.lastValidator) {
             console.warn('No last validator for "if" statement');
             return this;
