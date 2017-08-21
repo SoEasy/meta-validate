@@ -32,7 +32,7 @@ export interface ReceiveValidity {
         /**
             * @description Обсервер, в который будут валиться ошибки
             */
-        validity$: Subject<Validity>;
+        validity: Subject<Validity>;
 }
 
 /**
@@ -56,6 +56,7 @@ export class MVNumber<T> extends MVBase implements IBaseDecoratorType {
     if(condition: (i: any) => boolean): MVNumber<T>;
     skip(condition: (i: T) => boolean): MVNumber<T>;
     with(fields: Array<string>): MVNumber<T>;
+    custom(name: string, validator: (value: number, instance: any) => boolean): MVNumber<T>;
     convert(): MVNumber<T>;
     min(arg: MVNumberArg<T>): MVNumber<T>;
     greater(arg: MVNumberArg<T>): MVNumber<T>;
@@ -73,6 +74,7 @@ export class MVString<T> extends MVBase implements IBaseDecoratorType {
         if(condition: (i: any) => boolean): MVString<T>;
         skip(condition: (i: T) => boolean): MVString<T>;
         with(fields: Array<string>): MVString<T>;
+        custom(name: string, validator: (value: number, instance: any) => boolean): MVString<T>;
         convert(): MVString<T>;
         minLength(arg: MVStringArg<number, T>): MVString<T>;
         maxLength(arg: MVStringArg<number, T>): MVString<T>;
@@ -101,6 +103,7 @@ export class MVBase implements IBaseDecoratorType {
     if(condition: (i: any) => boolean): MVBase;
     skip(condition: (i: any) => boolean): MVBase;
     with(fields: Array<string>): MVBase;
+    custom(name: string, validator: (value: number, instance: any) => boolean): MVBase;
     readonly validators: Record<string, MVValidator>;
     make(): any;
 }

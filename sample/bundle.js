@@ -690,9 +690,7 @@ var TestClass = (function () {
     }
     __decorate([
         index_1.MetaValidate.Number()
-            .skip(function () { return false; })
-            .min(5)
-            .if(function () { return false; })
+            .custom('foo', function () { return true; })
             .make(),
         __metadata("design:type", Number)
     ], TestClass.prototype, "fieldOne", void 0);
@@ -833,6 +831,11 @@ var MVBase = (function () {
     };
     MVBase.prototype.with = function (fields) {
         this.validateWith = fields;
+        return this;
+    };
+    MVBase.prototype.custom = function (name, validator) {
+        this.lastValidator = name;
+        this.prebuiltValidators[name] = validator;
         return this;
     };
     Object.defineProperty(MVBase.prototype, "validators", {
@@ -2542,6 +2545,10 @@ var MVNumber = (function (_super) {
         _super.prototype.with.call(this, fields);
         return this;
     };
+    MVNumber.prototype.custom = function (name, validator) {
+        _super.prototype.custom.call(this, name, validator);
+        return this;
+    };
     MVNumber.prototype.convert = function () {
         this.converters.push(function (value) {
             try {
@@ -2658,6 +2665,10 @@ var MVString = (function (_super) {
     };
     MVString.prototype.with = function (fields) {
         _super.prototype.with.call(this, fields);
+        return this;
+    };
+    MVString.prototype.custom = function (name, validator) {
+        _super.prototype.custom.call(this, name, validator);
         return this;
     };
     MVString.prototype.convert = function () {

@@ -116,6 +116,11 @@ var MVBase = (function () {
         this.validateWith = fields;
         return this;
     };
+    MVBase.prototype.custom = function (name, validator) {
+        this.lastValidator = name;
+        this.prebuiltValidators[name] = validator;
+        return this;
+    };
     Object.defineProperty(MVBase.prototype, "validators", {
         get: function () {
             return this.prebuiltValidators;
@@ -1823,6 +1828,10 @@ var MVNumber = (function (_super) {
         _super.prototype.with.call(this, fields);
         return this;
     };
+    MVNumber.prototype.custom = function (name, validator) {
+        _super.prototype.custom.call(this, name, validator);
+        return this;
+    };
     MVNumber.prototype.convert = function () {
         this.converters.push(function (value) {
             try {
@@ -1939,6 +1948,10 @@ var MVString = (function (_super) {
     };
     MVString.prototype.with = function (fields) {
         _super.prototype.with.call(this, fields);
+        return this;
+    };
+    MVString.prototype.custom = function (name, validator) {
+        _super.prototype.custom.call(this, name, validator);
         return this;
     };
     MVString.prototype.convert = function () {

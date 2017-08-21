@@ -24,6 +24,11 @@ export class MVNumber<T> extends MVBase implements IBaseDecoratorType {
         return this;
     }
 
+    custom(name: string, validator: (value: number, instance: any) => boolean): MVNumber<T> {
+        super.custom(name, validator);
+        return this;
+    }
+
     convert(): MVNumber<T> {
         this.converters.push((value: any) => {
             try {
