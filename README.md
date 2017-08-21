@@ -114,7 +114,7 @@ class Document implements ReceiveValidity {
     docType: string = null;
 
     @MetaValidate.String<Document>()
-    .with('docType')
+    .with(['docType'])
     .required().if(instance => instance.docType !== 'dumb')
     .alphanum()
     .custom('length', (value, instance) => instance.docType === 'pass_rf' ? !value || value.length !== 4 : !value || value.length === 0)
@@ -122,7 +122,7 @@ class Document implements ReceiveValidity {
     docNumber: string = null;
 
     @MetaValidate.String<Document>()
-    .with('docType')
+    .with(['docType'])
     .required()
     .minLength(2)
     .maxLength(4)
