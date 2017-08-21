@@ -35,5 +35,5 @@ export interface ReceiveValidity {
     /**
      * @description Обсервер, в который будут валиться ошибки
      */
-    validity: Subject<Validity>;
+    validity$: Subject<Validity>;
 }
