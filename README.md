@@ -2,9 +2,9 @@
 Декораторы для валидации классов.
 
 ### Общие принципы:
-#### Принцип первый - валидаторы складываются в цепочку.
+#### 1 - валидаторы складываются в цепочку.
 Цепочка всегда начинается с `@MetaValidate.` и заканчивается на `.make()`
-#### Принцип второй - ошибки складываются в объект следующего вида:
+#### 2 - ошибки складываются в объект следующего вида:
 ```
 {
     errors: {
@@ -21,7 +21,7 @@
     }
 }
 ```
-#### Принцип третий - есть пренастроенные классы валидаторов и можно будет регистрировать свои(скоро)
+#### 3 - есть пренастроенные классы валидаторов и можно будет регистрировать свои(скоро)
 Это значит, что сам по себе `@MetaValidate` просто хранилище всяких классов с валидаторами. Сейчас их несколько:
 - `Number<T>` - класс с частыми валидаторами чисел
 - `String<T>` - класс с частыми валидаторами строк
@@ -30,24 +30,24 @@
 - `Base` - класс с базовыми методами, предполагающий использование только кастомных валидаторов
 Дженерики принимают класс, поля которого вы валидируете.
 
-#### Принцип четвертый - ваши классы должны реализовывать интерфейс ReceiveValidity
-В вашем классе обязательно должно быть поле `validity: Subject<Validity>`, в который будут валиться ошибки.
+#### 4 - ваши классы должны реализовывать интерфейс ReceiveValidity
+В вашем классе обязательно должно быть поле `validity$: Subject<Validity>`, в который будут валиться ошибки.
 
-#### Принцип пятый - семантика валидаторов.
+#### 5 - семантика валидаторов.
 Валидаторы возвращают false, если значение валидно. true - если есть ошибка. Т.е. валидатор отвечает на вопрос - есть-ли ошибка?
 
 Это сделано для того, чтобы использовать объект с ошибками в шаблонах без всяких плясок вокруг ng-if. Пишем `<span class="error" ng-if="validity.field.min">Ошибочка min, маловато ввели</span>`
 
-#### Шестое - преднастроенные валидаторы умеют принимать как значение, так и функцию от экземпляра
+#### 6 - преднастроенные валидаторы умеют принимать как значение, так и функцию от экземпляра
 
-#### Седьмое - валидаторы запускаются на каждый чих над полем или связанными полями
+#### 7 - валидаторы запускаются на каждый чих над полем или связанными полями
 
 
 ### Базовое использование
 Пример
 ```
 class Foo {
-    validity: BehaviorSubject<Validity> = new BehaviorSubject();
+    validity$: BehaviorSubject<Validity> = new BehaviorSubject();
 
     @MetaValidate.MVString<Foo>().required().make()
     bar: number = null;
@@ -110,7 +110,7 @@ field: string = null;
 import { MetaValidate, ReceiveValidity, Validity } from 'meta-validate';
 
 class Document implements ReceiveValidity {
-    validity: BehaviorSubject<Validity> = new BehaviorSubject();
+    validity$: BehaviorSubject<Validity> = new BehaviorSubject();
 
     @MetaValidate.Trigger().make()
     docType: string = null;
@@ -139,7 +139,7 @@ class Document implements ReceiveValidity {
 }
 
 class Customer implements ReceiveValidity {
-    validity: BehaviorSubject<Validity> = new BehaviorSubject();
+    validity$: BehaviorSubject<Validity> = new BehaviorSubject();
 
     @MetaValidate.Nested().make()
     document: Document = new Document();
@@ -178,7 +178,7 @@ customerErrors = {
 Пользоваться следующим образом:
 ```
 const customer = new Customer();
-customer.validity.subscribe((errors: Validity) => {
+customer.validity$.subscribe((errors: Validity) => {
     this.errors = errors;
     this.isFullValid = this.errors.isFulLValid();
 });
