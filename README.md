@@ -7,14 +7,16 @@
 #### Принцип второй - ошибки складываются в объект следующего вида:
 ```
 {
-    %ПОЛЕ%: {
-        %КЛЮЧ_ОШИБКИ_1%: boolean,
-        %КЛЮЧ_ОШИБКИ_2%: boolean,
-    },
-    %ПОЛЕ_КОМПОЗИЦИЯ%: {
-        %ПОЛЕ_КЛАССА_КОМПОЗИЦИИ_1%: {
-            %КЛЮЧ_ОШИБКИ_1%: boolean
-            ...
+    errors: {
+        %ПОЛЕ%: {
+            %КЛЮЧ_ОШИБКИ_1%: boolean,
+            %КЛЮЧ_ОШИБКИ_2%: boolean,
+        },
+        %ПОЛЕ_КОМПОЗИЦИЯ%: {
+            %ПОЛЕ_КЛАССА_КОМПОЗИЦИИ_1%: {
+                %КЛЮЧ_ОШИБКИ_1%: boolean
+                ...
+            }
         }
     }
 }
@@ -150,23 +152,25 @@ class Customer implements ReceiveValidity {
 Объект ошибок будет следующим:
 ```
 customerErrors = {
-    document: {
-        docNumber: {
-            required: true,
-            alphanum: true,
-            length: true
-        },
-        docSeried: {
-            required: true,
-            minLength: true,
-            maxLength: true
-        },
-        additionalDocumentNumber: {
-            length: true
+    errors: {
+        document: {
+            docNumber: {
+                required: true,
+                alphanum: true,
+                length: true
+            },
+            docSeried: {
+                required: true,
+                minLength: true,
+                maxLength: true
+            },
+            additionalDocumentNumber: {
+                length: true
+            }
         }
-    }
-    name: {
-        required: true
+        name: {
+            required: true
+        }
     }
 }
 ```
