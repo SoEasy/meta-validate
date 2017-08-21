@@ -12,7 +12,7 @@ class TestClass implements ReceiveValidity {
     validity$: BehaviorSubject<Validity> = new BehaviorSubject<Validity>({});
 
     @MetaValidate.Number<TestClass>()
-        .custom('foo', () => true)
+        .custom('foo', () => false)
         .make()
     fieldOne: number = null;
     //

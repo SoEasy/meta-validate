@@ -1,6 +1,5 @@
 import { MVValidator, MVFieldValidity, VALIDATE_FIELDS_KEY } from './interfaces';
 import { Validity } from './validity';
-import 'reflect-metadata';
 
 /**
  * @description Хранилище информации, необходимой для работы валидаторов.

@@ -1,16 +1,15 @@
 import { VALIDATE_FIELDS_KEY } from './interfaces';
 import { ValidateRelationStore } from './relation-store';
 import { MVBase } from './types/base';
-import 'reflect-metadata';
 
 export function makeDecorator<T>(
     validationConfig: MVBase
 ): any {
     return (target: T, propertyKey: keyof T): PropertyDescriptor => {
-        if (!Reflect.hasMetadata(VALIDATE_FIELDS_KEY, target)) {
-            Reflect.defineMetadata(VALIDATE_FIELDS_KEY, new ValidateRelationStore(), target);
+        if (!(Reflect as any).hasMetadata(VALIDATE_FIELDS_KEY, target)) {
+            (Reflect as any).defineMetadata(VALIDATE_FIELDS_KEY, new ValidateRelationStore(), target);
         }
-        const existValidateMetadata = Reflect.getMetadata(VALIDATE_FIELDS_KEY, target);
+        const existValidateMetadata = (Reflect as any).getMetadata(VALIDATE_FIELDS_KEY, target);
 
         existValidateMetadata.addValidators(propertyKey, validationConfig.validators);
         if (validationConfig.validateWith) {
