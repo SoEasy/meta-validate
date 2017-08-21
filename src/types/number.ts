@@ -42,36 +42,36 @@ export class MVNumber<T> extends MVBase implements IBaseDecoratorType {
 
     min(arg: MVNumberArg<T>): MVNumber<T> {
         this.lastValidator = 'min';
-        this.prebuiltValidators['min'] = (v: number, i: T): boolean => {
+        this.prebuiltValidators['min'] = (v: any, i: T): boolean => {
             const compareValue = typeof arg === 'function' ? arg(i) : arg;
-            return !v || v < compareValue;
+            return !v || parseFloat(v) < compareValue;
         };
         return this;
     }
 
     greater(arg: MVNumberArg<T>): MVNumber<T> {
         this.lastValidator = 'greater';
-        this.prebuiltValidators['greater'] = (v: number, i: T): boolean => {
+        this.prebuiltValidators['greater'] = (v: any, i: T): boolean => {
             const compareValue = typeof arg === 'function' ? arg(i) : arg;
-            return !v || v <= compareValue;
+            return !v || parseFloat(v) <= compareValue;
         };
         return this;
     }
 
     max(arg: MVNumberArg<T>): MVNumber<T> {
         this.lastValidator = 'max';
-        this.prebuiltValidators['max'] = (v: number, i: T): boolean => {
+        this.prebuiltValidators['max'] = (v: any, i: T): boolean => {
             const compareValue = typeof arg === 'function' ? arg(i) : arg;
-            return !v || v > compareValue;
+            return !v || parseFloat(v) > compareValue;
         };
         return this;
     }
 
     less(arg: MVNumberArg<T>): MVNumber<T> {
         this.lastValidator = 'less';
-        this.prebuiltValidators['less'] = (v: number, i: T): boolean => {
+        this.prebuiltValidators['less'] = (v: any, i: T): boolean => {
             const compareValue = typeof arg === 'function' ? arg(i) : arg;
-            return !v || v >= compareValue;
+            return !v || parseFloat(v) >= compareValue;
         };
         return this;
     }
@@ -92,21 +92,21 @@ export class MVNumber<T> extends MVBase implements IBaseDecoratorType {
 
     negative(): MVNumber<T> {
         this.lastValidator = 'negative';
-        this.prebuiltValidators['negative'] = (v: number): boolean => !v || v >= 0;
+        this.prebuiltValidators['negative'] = (v: any): boolean => !v || parseFloat(v) >= 0;
         return this;
     }
 
     positive(): MVNumber<T> {
         this.lastValidator = 'positive';
-        this.prebuiltValidators['positive'] = (v: number): boolean => !v || v <= 0;
+        this.prebuiltValidators['positive'] = (v: any): boolean => !v || parseFloat(v) <= 0;
         return this;
     }
 
     divideBy(arg: MVNumberArg<T>): MVNumber<T> {
         this.lastValidator = 'divideBy';
-        this.prebuiltValidators['divideBy'] = (v: number, i: T): boolean => {
+        this.prebuiltValidators['divideBy'] = (v: any, i: T): boolean => {
             const compareValue = typeof arg === 'function' ? arg(i) : arg;
-            return !v || v % compareValue !== 0;
+            return !v || parseFloat(v) % compareValue !== 0;
         };
         return this;
     }

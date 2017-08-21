@@ -11,15 +11,19 @@ export class MetaValidate {
         return new MVString<T>();
     }
 
-    static Trigger(): any {
+    static Trigger(): MVBase {
         const retVal = new MVBase();
         retVal.isTrigger = true;
         return retVal;
     }
 
-    static Nested(): any {
+    static Nested(): MVBase {
         const retVal = new MVBase();
         retVal.isNested = true;
         return retVal;
+    }
+
+    static Base(): MVBase {
+        return new MVBase();
     }
 }

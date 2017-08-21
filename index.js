@@ -1360,6 +1360,9 @@ var MetaValidate = (function () {
         retVal.isNested = true;
         return retVal;
     };
+    MetaValidate.Base = function () {
+        return new base_1.MVBase();
+    };
     return MetaValidate;
 }());
 exports.MetaValidate = MetaValidate;
@@ -1847,7 +1850,7 @@ var MVNumber = (function (_super) {
         this.lastValidator = 'min';
         this.prebuiltValidators['min'] = function (v, i) {
             var compareValue = typeof arg === 'function' ? arg(i) : arg;
-            return !v || v < compareValue;
+            return !v || parseFloat(v) < compareValue;
         };
         return this;
     };
@@ -1855,7 +1858,7 @@ var MVNumber = (function (_super) {
         this.lastValidator = 'greater';
         this.prebuiltValidators['greater'] = function (v, i) {
             var compareValue = typeof arg === 'function' ? arg(i) : arg;
-            return !v || v <= compareValue;
+            return !v || parseFloat(v) <= compareValue;
         };
         return this;
     };
@@ -1863,7 +1866,7 @@ var MVNumber = (function (_super) {
         this.lastValidator = 'max';
         this.prebuiltValidators['max'] = function (v, i) {
             var compareValue = typeof arg === 'function' ? arg(i) : arg;
-            return !v || v > compareValue;
+            return !v || parseFloat(v) > compareValue;
         };
         return this;
     };
@@ -1871,7 +1874,7 @@ var MVNumber = (function (_super) {
         this.lastValidator = 'less';
         this.prebuiltValidators['less'] = function (v, i) {
             var compareValue = typeof arg === 'function' ? arg(i) : arg;
-            return !v || v >= compareValue;
+            return !v || parseFloat(v) >= compareValue;
         };
         return this;
     };
@@ -1890,19 +1893,19 @@ var MVNumber = (function (_super) {
     };
     MVNumber.prototype.negative = function () {
         this.lastValidator = 'negative';
-        this.prebuiltValidators['negative'] = function (v) { return !v || v >= 0; };
+        this.prebuiltValidators['negative'] = function (v) { return !v || parseFloat(v) >= 0; };
         return this;
     };
     MVNumber.prototype.positive = function () {
         this.lastValidator = 'positive';
-        this.prebuiltValidators['positive'] = function (v) { return !v || v <= 0; };
+        this.prebuiltValidators['positive'] = function (v) { return !v || parseFloat(v) <= 0; };
         return this;
     };
     MVNumber.prototype.divideBy = function (arg) {
         this.lastValidator = 'divideBy';
         this.prebuiltValidators['divideBy'] = function (v, i) {
             var compareValue = typeof arg === 'function' ? arg(i) : arg;
-            return !v || v % compareValue !== 0;
+            return !v || parseFloat(v) % compareValue !== 0;
         };
         return this;
     };
@@ -2001,7 +2004,7 @@ var MVString = (function (_super) {
     MVString.prototype.alphanum = function () {
         this.lastValidator = 'alphanum';
         this.prebuiltValidators['alphanum'] = function (v) {
-            return !v || /^[a-zA-Z0-9]+$/.test(v);
+            return !v || /^[а-яА-Яa-zA-Z0-9]+$/.test(v);
         };
         return this;
     };

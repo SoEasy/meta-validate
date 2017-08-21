@@ -81,7 +81,7 @@ export class MVString<T> extends MVBase implements IBaseDecoratorType {
     alphanum(): MVString<T> {
         this.lastValidator = 'alphanum';
         this.prebuiltValidators['alphanum'] = (v: string): boolean => {
-            return !v || /^[a-zA-Z0-9]+$/.test(v);
+            return !v || /^[а-яА-Яa-zA-Z0-9]+$/.test(v);
         };
         return this;
     }

@@ -46,8 +46,9 @@ export class Validity {
 export class MetaValidate {
     static Number<T>(): MVNumber<T>;
     static String<T>(): MVString<T>;
-    static Trigger(): any;
-    static Nested(): any;
+    static Trigger(): MVBase;
+    static Nested(): MVBase;
+    static Base(): MVBase;
 }
 
 export type MVNumberArg<T> = number | ((instance: T) => number);
@@ -103,7 +104,7 @@ export class MVBase implements IBaseDecoratorType {
     if(condition: (i: any) => boolean): MVBase;
     skip(condition: (i: any) => boolean): MVBase;
     with(fields: Array<string>): MVBase;
-    custom(name: string, validator: (value: number, instance: any) => boolean): MVBase;
+    custom(name: string, validator: (value: any, instance: any) => boolean): MVBase;
     readonly validators: Record<string, MVValidator>;
     make(): any;
 }

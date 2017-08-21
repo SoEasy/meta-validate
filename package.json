@@ -1,6 +1,6 @@
 {
   "name": "meta-validate",
-  "version": "2.0.0",
+  "version": "2.0.1",
   "description": "TypeScript validation utils",
   "types": "index.d.ts",
   "typescript": {

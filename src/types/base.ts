@@ -36,7 +36,7 @@ export class MVBase implements IBaseDecoratorType {
         return this;
     }
 
-    custom(name: string, validator: (value: number, instance: any) => boolean): MVBase {
+    custom(name: string, validator: (value: any, instance: any) => boolean): MVBase {
         this.lastValidator = name;
         this.prebuiltValidators[name] = validator;
         return this;
