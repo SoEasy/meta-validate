@@ -56,7 +56,7 @@ export function makeDecorator<T>(
                 // Валидация связанных полей
                 validateKeyMetadata.validateReleatedFields(propertyKey, this);
 
-                if (validationConfig.isNested && (newVal as any).validity$) {
+                if (validationConfig.isNested && newVal && (newVal as any).validity$) {
                     (newVal as any).validity$.subscribe(
                         nestedValidity => {
                             validateKeyMetadata.setFieldErrors(propertyKey, nestedValidity.errors);
