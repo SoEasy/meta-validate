@@ -59,7 +59,11 @@ export function makeDecorator<T>(
                 if (validationConfig.isNested && newVal && (newVal as any).validity$) {
                     (newVal as any).validity$.subscribe(
                         nestedValidity => {
-                            validateKeyMetadata.setFieldErrors(propertyKey, nestedValidity.errors);
+                            if (validateKeyMetadata.toSkipValidation(propertyKey, this)) {
+                                validateKeyMetadata.setFieldErrors(propertyKey, {});
+                            } else {
+                                validateKeyMetadata.setFieldErrors(propertyKey, nestedValidity.errors);
+                            }
                             this.validity$.next(validateKeyMetadata.getErrors());
                         }
                     );

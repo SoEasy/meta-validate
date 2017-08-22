@@ -74,18 +74,23 @@ export class ValidateRelationStore {
         this.validatorConditions[field] = conditions;
     }
 
+    toSkipValidation(field: string, instance: any): boolean {
+        return this.skipConditions[field] ? this.skipConditions[field](instance) : false;
+    }
+
     validateField(field: string, newVal: any, instance: any): void {
         const errors: MVFieldValidity = {};
 
+        const validators = this.getValidators(field);
+        const skipValidation = this.toSkipValidation(field, instance);
+
         const isNestedField = this.nestedFields.includes(field);
         if (isNestedField) {
+            if (skipValidation) {
+                return this.setFieldErrors(field, {});
+            }
             return this.validateNestedField(newVal);
         }
-
-        const validators = this.getValidators(field);
-        const skipValidation = this.skipConditions[field]
-            ? this.skipConditions[field](instance)
-            : false;
 
         if (validators) {
             for (const validationErrorKey of Object.keys(validators)) {

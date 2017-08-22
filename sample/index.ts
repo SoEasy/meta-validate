@@ -1,5 +1,6 @@
 import { MetaValidate, ReceiveValidity, Validity } from '../index';
 import {BehaviorSubject} from 'rxjs/BehaviorSubject';
+import 'reflect-metadata';
 
 class NestedClass implements ReceiveValidity {
     validity$: BehaviorSubject<Validity> = new BehaviorSubject<Validity>({});
@@ -11,22 +12,14 @@ class NestedClass implements ReceiveValidity {
 class TestClass implements ReceiveValidity {
     validity$: BehaviorSubject<Validity> = new BehaviorSubject<Validity>({});
 
-    @MetaValidate.Number<TestClass>()
-        .custom('foo', () => false)
-        .make()
-    fieldOne: number = null;
-    //
-    // @MetaValidate.String<TestClass>().make()
-    // fieldString: string = 'hello';
-
-    @MetaValidate.Nested().with(['fieldOne']).make()
+    @MetaValidate.Nested().skip(() => true).make()
     nestedField: NestedClass = new NestedClass();
 }
 
 const t1 = new TestClass();
-t1.validity$.subscribe((v) => console.log('validity', JSON.stringify(v.errors)));
+t1.validity$.subscribe((v) => console.log('validity', JSON.stringify(v.errors), v.isFullValid()));
 
-t1.fieldOne = 7;
+t1.nestedField.nField = '2';
 //
 // t1.nestedField.nField = 'bar';
 // t1.nestedField.nField = null;

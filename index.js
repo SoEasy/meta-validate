@@ -302,7 +302,12 @@ function makeDecorator(validationConfig) {
                 validateKeyMetadata_1.validateReleatedFields(propertyKey, this);
                 if (validationConfig.isNested && newVal && newVal.validity$) {
                     newVal.validity$.subscribe(function (nestedValidity) {
-                        validateKeyMetadata_1.setFieldErrors(propertyKey, nestedValidity.errors);
+                        if (validateKeyMetadata_1.toSkipValidation(propertyKey, _this)) {
+                            validateKeyMetadata_1.setFieldErrors(propertyKey, {});
+                        }
+                        else {
+                            validateKeyMetadata_1.setFieldErrors(propertyKey, nestedValidity.errors);
+                        }
                         _this.validity$.next(validateKeyMetadata_1.getErrors());
                     });
                 }
@@ -398,16 +403,20 @@ var ValidateRelationStore = (function () {
     ValidateRelationStore.prototype.setupValidatorConditions = function (field, conditions) {
         this.validatorConditions[field] = conditions;
     };
+    ValidateRelationStore.prototype.toSkipValidation = function (field, instance) {
+        return this.skipConditions[field] ? this.skipConditions[field](instance) : false;
+    };
     ValidateRelationStore.prototype.validateField = function (field, newVal, instance) {
         var errors = {};
+        var validators = this.getValidators(field);
+        var skipValidation = this.toSkipValidation(field, instance);
         var isNestedField = this.nestedFields.includes(field);
         if (isNestedField) {
+            if (skipValidation) {
+                return this.setFieldErrors(field, {});
+            }
             return this.validateNestedField(newVal);
         }
-        var validators = this.getValidators(field);
-        var skipValidation = this.skipConditions[field]
-            ? this.skipConditions[field](instance)
-            : false;
         if (validators) {
             for (var _i = 0, _a = Object.keys(validators); _i < _a.length; _i++) {
                 var validationErrorKey = _a[_i];
