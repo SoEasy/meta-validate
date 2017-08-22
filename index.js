@@ -300,7 +300,7 @@ function makeDecorator(validationConfig) {
                 }
                 // Валидация связанных полей
                 validateKeyMetadata_1.validateReleatedFields(propertyKey, this);
-                if (validationConfig.isNested && newVal.validity$) {
+                if (validationConfig.isNested && newVal && newVal.validity$) {
                     newVal.validity$.subscribe(function (nestedValidity) {
                         validateKeyMetadata_1.setFieldErrors(propertyKey, nestedValidity.errors);
                         _this.validity$.next(validateKeyMetadata_1.getErrors());
