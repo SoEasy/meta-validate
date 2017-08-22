@@ -112,12 +112,12 @@ export class ValidateRelationStore {
         const relatedFields = this.getRelatedFields(field);
         for (const relatedField of relatedFields) {
             const relatedFieldValue = instance[relatedField];
-            const isNestedField = this.nestedFields.includes(relatedField);
-            if (isNestedField) {
-                this.validateNestedField(relatedFieldValue);
-            } else {
-                this.validateField(relatedField, relatedFieldValue, instance);
-            }
+            // const isNestedField = this.nestedFields.includes(relatedField);
+            // if (isNestedField) {
+            //     this.validateNestedField(relatedFieldValue);
+            // } else {
+            this.validateField(relatedField, relatedFieldValue, instance);
+            // }
         }
     }
 
@@ -128,6 +128,9 @@ export class ValidateRelationStore {
         if (!nestedMetadata) { return; }
         for (const nestedField of Object.keys(nestedMetadata.validatorsStore)) {
             nestedMetadata.validateField(nestedField, value[nestedField], value);
+        }
+        if (value) {
+            value.validity$.next(nestedMetadata.errorsStore);
         }
     }
 

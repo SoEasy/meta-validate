@@ -12,7 +12,10 @@ class NestedClass implements ReceiveValidity {
 class TestClass implements ReceiveValidity {
     validity$: BehaviorSubject<Validity> = new BehaviorSubject<Validity>({});
 
-    @MetaValidate.Nested().skip(() => true).make()
+    @MetaValidate.Trigger().make()
+    toSkip: boolean = true;
+
+    @MetaValidate.Nested().skip((i) => i.toSkip).with(['toSkip']).make()
     nestedField: NestedClass = new NestedClass();
 }
 
@@ -20,6 +23,9 @@ const t1 = new TestClass();
 t1.validity$.subscribe((v) => console.log('validity', JSON.stringify(v.errors), v.isFullValid()));
 
 t1.nestedField.nField = '2';
+t1.nestedField.nField = null;
+t1.toSkip = false;
+// t1.nestedField.nField = '3';
 //
 // t1.nestedField.nField = 'bar';
 // t1.nestedField.nField = null;

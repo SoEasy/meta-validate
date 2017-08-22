@@ -438,13 +438,12 @@ var ValidateRelationStore = (function () {
         for (var _i = 0, relatedFields_1 = relatedFields; _i < relatedFields_1.length; _i++) {
             var relatedField = relatedFields_1[_i];
             var relatedFieldValue = instance[relatedField];
-            var isNestedField = this.nestedFields.includes(relatedField);
-            if (isNestedField) {
-                this.validateNestedField(relatedFieldValue);
-            }
-            else {
-                this.validateField(relatedField, relatedFieldValue, instance);
-            }
+            // const isNestedField = this.nestedFields.includes(relatedField);
+            // if (isNestedField) {
+            //     this.validateNestedField(relatedFieldValue);
+            // } else {
+            this.validateField(relatedField, relatedFieldValue, instance);
+            // }
         }
     };
     // TODO возможно этого тут быть не должно
@@ -459,6 +458,9 @@ var ValidateRelationStore = (function () {
         for (var _i = 0, _a = Object.keys(nestedMetadata.validatorsStore); _i < _a.length; _i++) {
             var nestedField = _a[_i];
             nestedMetadata.validateField(nestedField, value[nestedField], value);
+        }
+        if (value) {
+            value.validity$.next(nestedMetadata.errorsStore);
         }
     };
     ValidateRelationStore.prototype.getRelatedFields = function (key) {

@@ -710,10 +710,15 @@ var NestedClass = (function () {
 var TestClass = (function () {
     function TestClass() {
         this.validity$ = new BehaviorSubject_1.BehaviorSubject({});
+        this.toSkip = true;
         this.nestedField = new NestedClass();
     }
     __decorate([
-        index_1.MetaValidate.Nested().skip(function () { return true; }).make(),
+        index_1.MetaValidate.Trigger().make(),
+        __metadata("design:type", Boolean)
+    ], TestClass.prototype, "toSkip", void 0);
+    __decorate([
+        index_1.MetaValidate.Nested().skip(function (i) { return i.toSkip; }).with(['toSkip']).make(),
         __metadata("design:type", NestedClass)
     ], TestClass.prototype, "nestedField", void 0);
     return TestClass;
@@ -721,6 +726,9 @@ var TestClass = (function () {
 var t1 = new TestClass();
 t1.validity$.subscribe(function (v) { return console.log('validity', JSON.stringify(v.errors), v.isFullValid()); });
 t1.nestedField.nField = '2';
+t1.nestedField.nField = null;
+t1.toSkip = false;
+// t1.nestedField.nField = '3';
 //
 // t1.nestedField.nField = 'bar';
 // t1.nestedField.nField = null;
@@ -1173,13 +1181,12 @@ var ValidateRelationStore = (function () {
         for (var _i = 0, relatedFields_1 = relatedFields; _i < relatedFields_1.length; _i++) {
             var relatedField = relatedFields_1[_i];
             var relatedFieldValue = instance[relatedField];
-            var isNestedField = this.nestedFields.includes(relatedField);
-            if (isNestedField) {
-                this.validateNestedField(relatedFieldValue);
-            }
-            else {
-                this.validateField(relatedField, relatedFieldValue, instance);
-            }
+            // const isNestedField = this.nestedFields.includes(relatedField);
+            // if (isNestedField) {
+            //     this.validateNestedField(relatedFieldValue);
+            // } else {
+            this.validateField(relatedField, relatedFieldValue, instance);
+            // }
         }
     };
     // TODO возможно этого тут быть не должно
@@ -1194,6 +1201,9 @@ var ValidateRelationStore = (function () {
         for (var _i = 0, _a = Object.keys(nestedMetadata.validatorsStore); _i < _a.length; _i++) {
             var nestedField = _a[_i];
             nestedMetadata.validateField(nestedField, value[nestedField], value);
+        }
+        if (value) {
+            value.validity$.next(nestedMetadata.errorsStore);
         }
     };
     ValidateRelationStore.prototype.getRelatedFields = function (key) {
