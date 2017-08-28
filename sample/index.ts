@@ -12,19 +12,49 @@ class NestedClass implements ReceiveValidity {
 class TestClass implements ReceiveValidity {
     validity$: BehaviorSubject<Validity> = new BehaviorSubject<Validity>({});
 
-    @MetaValidate.Trigger().make()
-    toSkip: boolean = true;
+    @MetaValidate.String<TestClass>()
+    .with(['relatedField'])
+    .required()
+    .minLength(3)
+    .maxLength(6)
+    .make()
+    fooField: string = '666666';
 
-    @MetaValidate.Nested().skip((i) => i.toSkip).with(['toSkip']).make()
+    @MetaValidate.Trigger().make()
+    relatedField: number = 2;
+
+    hash: number = 42;
+
+    @MetaValidate.Nested()
+    .with(['relatedField'])
+    .required()
+    .make()
     nestedField: NestedClass = new NestedClass();
 }
 
 const t1 = new TestClass();
-t1.validity$.subscribe((v) => console.log('validity', JSON.stringify(v.errors), v.isFullValid()));
+const t2 = new TestClass();
+t1.validity$.subscribe((v) => console.log('validity t1', JSON.stringify(v), v.isFullValid()));
+t2.validity$.subscribe((v) => console.log('validity t2', JSON.stringify(v), v.isFullValid()));
 
-t1.nestedField.nField = '2';
-t1.nestedField.nField = null;
-t1.toSkip = false;
+t1.nestedField = null;
+t2.nestedField = null;
+
+t1.nestedField = new NestedClass();
+t1.relatedField = 41;
+
+t2.relatedField = 44;
+
+// t1.relatedField = 4;
+// t1.relatedField = 6;
+// t1.nestedField.nField = '2';
+// t1.relatedField = 7;
+// t1.nestedField.nField = null;
+
+
+// t1.nestedField.nField = '2';
+// t1.nestedField.nField = null;
+// t1.toSkip = false;
 // t1.nestedField.nField = '3';
 //
 // t1.nestedField.nField = 'bar';

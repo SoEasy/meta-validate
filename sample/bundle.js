@@ -710,24 +710,50 @@ var NestedClass = (function () {
 var TestClass = (function () {
     function TestClass() {
         this.validity$ = new BehaviorSubject_1.BehaviorSubject({});
-        this.toSkip = true;
+        this.fooField = '666666';
+        this.relatedField = 2;
+        this.hash = 42;
         this.nestedField = new NestedClass();
     }
     __decorate([
-        index_1.MetaValidate.Trigger().make(),
-        __metadata("design:type", Boolean)
-    ], TestClass.prototype, "toSkip", void 0);
+        index_1.MetaValidate.String()
+            .with(['relatedField'])
+            .required()
+            .minLength(3)
+            .maxLength(6)
+            .make(),
+        __metadata("design:type", String)
+    ], TestClass.prototype, "fooField", void 0);
     __decorate([
-        index_1.MetaValidate.Nested().skip(function (i) { return i.toSkip; }).with(['toSkip']).make(),
+        index_1.MetaValidate.Trigger().make(),
+        __metadata("design:type", Number)
+    ], TestClass.prototype, "relatedField", void 0);
+    __decorate([
+        index_1.MetaValidate.Nested()
+            .with(['relatedField'])
+            .required()
+            .make(),
         __metadata("design:type", NestedClass)
     ], TestClass.prototype, "nestedField", void 0);
     return TestClass;
 }());
 var t1 = new TestClass();
-t1.validity$.subscribe(function (v) { return console.log('validity', JSON.stringify(v.errors), v.isFullValid()); });
-t1.nestedField.nField = '2';
-t1.nestedField.nField = null;
-t1.toSkip = false;
+var t2 = new TestClass();
+t1.validity$.subscribe(function (v) { return console.log('validity t1', JSON.stringify(v), v.isFullValid()); });
+t2.validity$.subscribe(function (v) { return console.log('validity t2', JSON.stringify(v), v.isFullValid()); });
+t1.nestedField = null;
+t2.nestedField = null;
+t1.nestedField = new NestedClass();
+t1.relatedField = 41;
+t2.relatedField = 44;
+// t1.relatedField = 4;
+// t1.relatedField = 6;
+// t1.nestedField.nField = '2';
+// t1.relatedField = 7;
+// t1.nestedField.nField = null;
+// t1.nestedField.nField = '2';
+// t1.nestedField.nField = null;
+// t1.toSkip = false;
 // t1.nestedField.nField = '3';
 //
 // t1.nestedField.nField = 'bar';
@@ -1002,6 +1028,7 @@ exports.MetaValidate = types_1.MetaValidate;
 Object.defineProperty(exports, "__esModule", { value: true });
 var interfaces_1 = __webpack_require__(2);
 var relation_store_1 = __webpack_require__(6);
+var validity_1 = __webpack_require__(1);
 function makeDecorator(validationConfig) {
     return function (target, propertyKey) {
         if (!Reflect.hasMetadata(interfaces_1.VALIDATE_FIELDS_KEY, target)) {
@@ -1021,40 +1048,48 @@ function makeDecorator(validationConfig) {
             configurable: true,
             enumerable: true
         };
-        var wm = new WeakMap();
+        var valueStore = new WeakMap();
         var originalGet = descriptor.get || function () {
-            return wm.get(this);
+            return valueStore.get(this);
         };
         var originalSet = descriptor.set || function (val) {
-            wm.set(this, val);
+            valueStore.set(this, val);
         };
         descriptor.get = originalGet;
         descriptor.set = function (newVal) {
             var _this = this;
-            // tslint:disable-next-line
+            var validateKeyMetadata = Reflect.getMetadata(interfaces_1.VALIDATE_FIELDS_KEY, target);
             var currentVal = originalGet.call(this);
             originalSet.call(this, newVal);
+            var errorsStore = validateKeyMetadata.errorsStore;
+            if (!errorsStore.has(this)) {
+                errorsStore.set(this, new validity_1.Validity());
+            }
             if (newVal !== currentVal) {
-                var validateKeyMetadata_1 = Reflect.getMetadata(interfaces_1.VALIDATE_FIELDS_KEY, target);
                 // Валидация самого поля
                 // Если не триггер - валидируем
                 if (!validationConfig.isTrigger) {
-                    validateKeyMetadata_1.validateField(propertyKey, newVal, this);
+                    var fieldErrors = validateKeyMetadata.validateField(propertyKey, newVal, this);
+                    setErrors(errorsStore, this, propertyKey, fieldErrors);
                 }
                 // Валидация связанных полей
-                validateKeyMetadata_1.validateReleatedFields(propertyKey, this);
-                if (validationConfig.isNested && newVal && newVal.validity$) {
-                    newVal.validity$.subscribe(function (nestedValidity) {
-                        if (validateKeyMetadata_1.toSkipValidation(propertyKey, _this)) {
-                            validateKeyMetadata_1.setFieldErrors(propertyKey, {});
-                        }
-                        else {
-                            validateKeyMetadata_1.setFieldErrors(propertyKey, nestedValidity.errors);
-                        }
-                        _this.validity$.next(validateKeyMetadata_1.getErrors());
-                    });
+                var relatedErrors = validateKeyMetadata.validateRelatedFields(propertyKey, this);
+                Object.assign(errorsStore.get(this).errors, relatedErrors);
+                if (validationConfig.isNested) {
+                    if (newVal && newVal.validity$) {
+                        newVal.validity$.subscribe(function (nestedValidity) {
+                            if (!validateKeyMetadata.toSkipFieldValidation(propertyKey, _this)) {
+                                setErrors(errorsStore, _this, propertyKey, nestedValidity.errors);
+                            }
+                            _this.validity$.next(errorsStore.get(_this));
+                        });
+                    }
+                    else {
+                        var errors = validateKeyMetadata.validateField(propertyKey, newVal, this);
+                        errorsStore.get(this).errors[propertyKey] = errors;
+                    }
                 }
-                this.validity$.next(validateKeyMetadata_1.getErrors());
+                this.validity$.next(errorsStore.get(this));
             }
         };
         Object.defineProperty(target, propertyKey, descriptor);
@@ -1062,6 +1097,15 @@ function makeDecorator(validationConfig) {
     };
 }
 exports.makeDecorator = makeDecorator;
+function setErrors(wm, instance, key, errors) {
+    var errorsStore = wm.get(instance).errors;
+    if (!errorsStore[key]) {
+        errorsStore[key] = errors;
+    }
+    else {
+        Object.assign(errorsStore[key], errors);
+    }
+}
 
 
 /***/ }),
@@ -1080,7 +1124,6 @@ var __assign = (this && this.__assign) || Object.assign || function(t) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 var interfaces_1 = __webpack_require__(2);
-var validity_1 = __webpack_require__(1);
 /**
  * @description Хранилище информации, необходимой для работы валидаторов.
  * Хранит сами валидаторы, созависимые поля и результаты валидации
@@ -1099,15 +1142,23 @@ var ValidateRelationStore = (function () {
          * @description Хранилище условий, при которых поле нужно валидировать. Ключ - поле, значение - функция
          */
         this.skipConditions = {};
+        /**
+         * @description Хранилище условий, при которых нужно запускать определенный валидатор. Ключ - поле, значение -
+         * рекорд, где ключ - валидатор, значение - условие
+         */
         this.validatorConditions = {};
         /**
          * @description Хранилище вложенных полей, чтобы лишний раз не дергать метадату при валидации зависимых полей
          */
         this.nestedFields = [];
-        /**
-         * @description Хранилище ошибок валидации
-         */
-        this.errorsStore = new validity_1.Validity();
+        this.errorsStore = new WeakMap();
+        //
+        // private setFieldErrors(field: string, validity: MVFieldValidity): void {
+        //     this.errorsStore.errors[field] = validity;
+        // }
+        // getErrors(): Validity {
+        //     return this.errorsStore;
+        // }
     }
     ValidateRelationStore.prototype.addValidators = function (key, validators) {
         this.validatorsStore[key] = __assign({}, this.validatorsStore[key], validators);
@@ -1146,26 +1197,28 @@ var ValidateRelationStore = (function () {
     ValidateRelationStore.prototype.setupValidatorConditions = function (field, conditions) {
         this.validatorConditions[field] = conditions;
     };
-    ValidateRelationStore.prototype.toSkipValidation = function (field, instance) {
+    /**
+     * @description Условие полного скипа валидации
+     */
+    ValidateRelationStore.prototype.toSkipFieldValidation = function (field, instance) {
         return this.skipConditions[field] ? this.skipConditions[field](instance) : false;
     };
+    ValidateRelationStore.prototype.toSkipValidator = function (field, validatorKey, instance) {
+        return this.validatorConditions[field][validatorKey]
+            ? this.validatorConditions[field][validatorKey](instance)
+            : false;
+    };
     ValidateRelationStore.prototype.validateField = function (field, newVal, instance) {
+        var skipValidation = this.toSkipFieldValidation(field, instance);
+        if (skipValidation) {
+            return {};
+        }
         var errors = {};
         var validators = this.getValidators(field);
-        var skipValidation = this.toSkipValidation(field, instance);
-        var isNestedField = this.nestedFields.includes(field);
-        if (isNestedField) {
-            if (skipValidation) {
-                return this.setFieldErrors(field, {});
-            }
-            return this.validateNestedField(newVal);
-        }
         if (validators) {
             for (var _i = 0, _a = Object.keys(validators); _i < _a.length; _i++) {
                 var validationErrorKey = _a[_i];
-                var skipValidator = this.validatorConditions[field][validationErrorKey]
-                    ? this.validatorConditions[field][validationErrorKey](instance)
-                    : false;
+                var skipValidator = this.toSkipValidator(field, validationErrorKey, instance);
                 if (skipValidation || skipValidator) {
                     errors[validationErrorKey] = false;
                     continue;
@@ -1174,49 +1227,42 @@ var ValidateRelationStore = (function () {
                 errors[validationErrorKey] = validity;
             }
         }
-        this.setFieldErrors(field, errors);
+        var isNestedField = this.nestedFields.includes(field);
+        if (isNestedField) {
+            errors = __assign({}, errors, this.validateNestedField(newVal));
+        }
+        return errors;
     };
-    ValidateRelationStore.prototype.validateReleatedFields = function (field, instance) {
+    ValidateRelationStore.prototype.validateRelatedFields = function (field, instance) {
         var relatedFields = this.getRelatedFields(field);
+        var errors = {};
         for (var _i = 0, relatedFields_1 = relatedFields; _i < relatedFields_1.length; _i++) {
             var relatedField = relatedFields_1[_i];
             var relatedFieldValue = instance[relatedField];
-            // const isNestedField = this.nestedFields.includes(relatedField);
-            // if (isNestedField) {
-            //     this.validateNestedField(relatedFieldValue);
-            // } else {
-            this.validateField(relatedField, relatedFieldValue, instance);
-            // }
+            errors[relatedField] = this.validateField(relatedField, relatedFieldValue, instance);
         }
+        return errors;
     };
-    // TODO возможно этого тут быть не должно
     ValidateRelationStore.prototype.validateNestedField = function (value) {
         if (!value) {
-            return;
+            return {};
         }
         var nestedMetadata = Reflect.getMetadata(interfaces_1.VALIDATE_FIELDS_KEY, Object.getPrototypeOf(value));
         if (!nestedMetadata) {
-            return;
+            return {};
         }
+        var errors = {};
         for (var _i = 0, _a = Object.keys(nestedMetadata.validatorsStore); _i < _a.length; _i++) {
             var nestedField = _a[_i];
-            nestedMetadata.validateField(nestedField, value[nestedField], value);
+            errors[nestedField] = nestedMetadata.validateField(nestedField, value[nestedField], value);
         }
-        if (value) {
-            value.validity$.next(nestedMetadata.errorsStore);
-        }
+        return errors;
     };
     ValidateRelationStore.prototype.getRelatedFields = function (key) {
         return this.fieldsRelationsStore[key] || [];
     };
     ValidateRelationStore.prototype.getValidators = function (field) {
         return this.validatorsStore[field] || {};
-    };
-    ValidateRelationStore.prototype.setFieldErrors = function (field, validity) {
-        this.errorsStore.errors[field] = validity;
-    };
-    ValidateRelationStore.prototype.getErrors = function () {
-        return this.errorsStore;
     };
     return ValidateRelationStore;
 }());
@@ -1406,7 +1452,7 @@ var MVString = (function (_super) {
         this.lastValidator = 'maxLength';
         this.prebuiltValidators['maxLength'] = function (v, i) {
             var compareValue = typeof arg === 'function' ? arg(i) : arg;
-            return !v || v.length > compareValue;
+            return !!v && v.length > compareValue;
         };
         return this;
     };

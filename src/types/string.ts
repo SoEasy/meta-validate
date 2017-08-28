@@ -49,7 +49,7 @@ export class MVString<T> extends MVBase implements IBaseDecoratorType {
         this.lastValidator = 'maxLength';
         this.prebuiltValidators['maxLength'] = (v: string, i: T): boolean => {
             const compareValue = typeof arg === 'function' ? arg(i) : arg;
-            return !v || v.length > compareValue;
+            return !!v && v.length > compareValue;
         };
         return this;
     }

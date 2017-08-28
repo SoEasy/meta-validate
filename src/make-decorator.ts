@@ -1,6 +1,7 @@
 import { VALIDATE_FIELDS_KEY } from './interfaces';
 import { ValidateRelationStore } from './relation-store';
 import { MVBase } from './types/base';
+import { Validity } from './validity';
 
 export function makeDecorator<T>(
     validationConfig: MVBase
@@ -29,50 +30,68 @@ export function makeDecorator<T>(
             enumerable: true
         };
 
-        const wm = new WeakMap<any, T>();
+        const valueStore = new WeakMap<any, T>();
 
         const originalGet = descriptor.get || function(): T | undefined {
-            return wm.get(this as any);
+            return valueStore.get(this as any);
         };
         const originalSet = descriptor.set || function(val: T): void {
-            wm.set(this, val);
+            valueStore.set(this, val);
         };
 
         descriptor.get = originalGet;
         descriptor.set = function(newVal: T): void {
-            // tslint:disable-next-line
+            const validateKeyMetadata = (Reflect as any).getMetadata(VALIDATE_FIELDS_KEY, target);
             const currentVal = originalGet.call(this);
             originalSet.call(this, newVal);
 
-            if (newVal !== currentVal) {
-                const validateKeyMetadata = (Reflect as any).getMetadata(VALIDATE_FIELDS_KEY, target);
+            const errorsStore = validateKeyMetadata.errorsStore;
 
+            if (!errorsStore.has(this)) {
+                errorsStore.set(this, new Validity());
+            }
+
+            if (newVal !== currentVal) {
                 // Валидация самого поля
                 // Если не триггер - валидируем
                 if (!validationConfig.isTrigger) {
-                    validateKeyMetadata.validateField(propertyKey, newVal, this);
+                    const fieldErrors = validateKeyMetadata.validateField(propertyKey, newVal, this);
+                    setErrors(errorsStore, this, propertyKey, fieldErrors);
                 }
 
                 // Валидация связанных полей
-                validateKeyMetadata.validateReleatedFields(propertyKey, this);
+                const relatedErrors = validateKeyMetadata.validateRelatedFields(propertyKey, this);
+                Object.assign(errorsStore.get(this).errors, relatedErrors);
 
-                if (validationConfig.isNested && newVal && (newVal as any).validity$) {
-                    (newVal as any).validity$.subscribe(
-                        nestedValidity => {
-                            if (validateKeyMetadata.toSkipValidation(propertyKey, this)) {
-                                validateKeyMetadata.setFieldErrors(propertyKey, {});
-                            } else {
-                                validateKeyMetadata.setFieldErrors(propertyKey, nestedValidity.errors);
+                if (validationConfig.isNested) {
+                    if (newVal && (newVal as any).validity$) {
+                        (newVal as any).validity$.subscribe(
+                            nestedValidity => {
+                                if (!validateKeyMetadata.toSkipFieldValidation(propertyKey, this)) {
+                                    setErrors(errorsStore, this, propertyKey, nestedValidity.errors);
+                                }
+                                this.validity$.next(errorsStore.get(this));
                             }
-                            this.validity$.next(validateKeyMetadata.getErrors());
-                        }
-                    );
+                        );
+                    } else {
+                        const errors = validateKeyMetadata.validateField(propertyKey, newVal, this);
+                        errorsStore.get(this).errors[propertyKey] = errors;
+                    }
                 }
 
-                this.validity$.next(validateKeyMetadata.getErrors());
+                this.validity$.next(errorsStore.get(this));
             }
         };
         Object.defineProperty(target, propertyKey, descriptor);
         return descriptor;
     };
+}
+
+function setErrors(wm: WeakMap<any, Validity>, instance: any, key: string, errors: any): void {
+    const errorsStore = wm.get(instance).errors;
+    if (!errorsStore[key]) {
+        errorsStore[key] = errors;
+    } else {
+        Object.assign(errorsStore[key], errors);
+    }
 }
