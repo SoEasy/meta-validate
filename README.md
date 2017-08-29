@@ -110,7 +110,7 @@ field: string = null;
 import { MetaValidate, ReceiveValidity, Validity } from 'meta-validate';
 
 class Document implements ReceiveValidity {
-    validity$: BehaviorSubject<Validity> = new BehaviorSubject();
+    validity$: BehaviorSubject<Validity> = new BehaviorSubject(null);
 
     @MetaValidate.Trigger().make()
     docType: string = null;
@@ -178,8 +178,8 @@ customerErrors = {
 Пользоваться следующим образом:
 ```
 const customer = new Customer();
-customer.validity$.subscribe((errors: Validity) => {
-    this.errors = errors;
-    this.isFullValid = this.errors.isFulLValid();
+customer.validity$.subscribe((validity: Validity) => {
+    this.errors = validity.errors;
+    this.isFullValid = validity.isFullValid();
 });
 ```
