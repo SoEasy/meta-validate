@@ -81,7 +81,7 @@ field: string = null;
 - `minLength(len: number | (instance) => number)` - минимальная длина значения должна быть len. Ключ ошибки - `minLength`
 - `maxLength(len: number | (instance) => number)` - максимальная длина значения должна быть len. Ключ ошибки - `maxLength`
 - `length(len: number | (instance) => number)` - Длина значения должна быть строго len. Ключ ошибки - `length`
-- `regex(len: pattern | (instance) => pattern)` - Значение должно соответствовать регулярке. Рекомендуется не забывать в регулярке ^$. Ключ ошибки - `regex`
+ - `regex(pattern: RegExp | (instance) => RegExp, name)` - Значение должно соответствовать регулярке. Рекомендуется не забывать в регулярке ^$. Ключ ошибки - переданный name
 - `alphanum` - Поле должно содержать только цифры и буквы. Ключ ошибки - `alphanum`
 - `token` - Поле должно содержать только цифры, буквы, тире и подчеркивание. Ключ ошибки - `token`
 
