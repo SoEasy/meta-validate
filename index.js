@@ -702,8 +702,10 @@ var MVString = (function (_super) {
             var compareValue = typeof pattern === 'function' ? pattern(i) : pattern;
             if (!compareValue) {
                 console.warn("RegExp validator '" + name + "' return null pattern");
+                return true;
             }
-            return !v || !compareValue || !compareValue.test(v);
+            compareValue = new RegExp(compareValue);
+            return !v || !compareValue.test(v);
         };
         return this;
     };
