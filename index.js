@@ -441,9 +441,6 @@ var ValidateRelationStore = (function () {
     };
     ValidateRelationStore.prototype.validateField = function (field, newVal, instance) {
         var skipValidation = this.toSkipFieldValidation(field, instance);
-        if (skipValidation) {
-            return {};
-        }
         var errors = {};
         var validators = this.getValidators(field);
         if (validators) {

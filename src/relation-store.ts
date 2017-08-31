@@ -91,10 +91,6 @@ export class ValidateRelationStore {
     validateField(field: string, newVal: any, instance: any): MVFieldValidity {
         const skipValidation = this.toSkipFieldValidation(field, instance);
 
-        if (skipValidation) {
-            return {};
-        }
-
         let errors: MVFieldValidity = {};
         const validators = this.getValidators(field);
 

@@ -93,11 +93,11 @@ export class MVString<T> extends MVBase implements IBaseDecoratorType {
 
 export class MVBase implements IBaseDecoratorType {
     protected prebuiltValidators: Record<string, MVValidator>;
-    lastValidator: string;
+    protected lastValidator: string;
     validateWith: Array<string>;
     skipCondition: (i: any) => boolean;
     validatorConditions: Record<string, (i: any) => boolean>;
-    converters: Array<(value: any) => any>;
+    protected converters: Array<(value: any) => any>;
     isTrigger: boolean;
     isNested: boolean;
     required(): MVBase;

@@ -4,12 +4,12 @@ import { makeDecorator } from '../make-decorator';
 export class MVBase implements IBaseDecoratorType {
     protected prebuiltValidators: Record<string, MVValidator> = {};
     protected lastValidator: string = null;
-    protected validateWith: Array<string> = [];
-    protected skipCondition: (i: any) => boolean = null;
-    protected validatorConditions: Record<string, (i: any) => boolean> = {};
+    validateWith: Array<string> = [];
+    skipCondition: (i: any) => boolean = null;
+    validatorConditions: Record<string, (i: any) => boolean> = {};
     protected converters: Array<(value: any) => any> = [];
-    protected isTrigger: boolean = false;
-    protected isNested: boolean = false;
+    isTrigger: boolean = false;
+    isNested: boolean = false;
 
     required(): MVBase {
         this.lastValidator = 'required';
