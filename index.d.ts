@@ -44,11 +44,11 @@ export class Validity {
 }
 
 export class MetaValidate {
-    static Number<T>(customName: string): MVNumber<T>;
-    static String<T>(customName: string): MVString<T>;
+    static Number<T>(customName?: string): MVNumber<T>;
+    static String<T>(customName?: string): MVString<T>;
     static Trigger(): MVBase;
-    static Nested(customName: string): MVBase;
-    static Base(customName: string): MVBase;
+    static Nested(customName?: string): MVBase;
+    static Base(customName?: string): MVBase;
 }
 
 export type MVNumberArg<T> = number | ((instance: T) => number);
