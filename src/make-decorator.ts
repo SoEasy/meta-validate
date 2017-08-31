@@ -11,10 +11,8 @@ export function makeDecorator<T>(
             (Reflect as any).defineMetadata(VALIDATE_FIELDS_KEY, new ValidateRelationStore(), target);
         }
         const existValidateMetadata = (Reflect as any).getMetadata(VALIDATE_FIELDS_KEY, target);
-
-        if (validationConfig.customPropertyKey) {
-            propertyKey = validationConfig.customPropertyKey;
-        }
+        const errorKey = validationConfig.customErrorKey || propertyKey;
+        existValidateMetadata.setupCustomErrorKey(propertyKey, errorKey);
 
         existValidateMetadata.addValidators(propertyKey, validationConfig.validators);
         if (validationConfig.validateWith) {
@@ -60,7 +58,7 @@ export function makeDecorator<T>(
                 // Если не триггер - валидируем
                 if (!validationConfig.isTrigger) {
                     const fieldErrors = validateKeyMetadata.validateField(propertyKey, newVal, this);
-                    setErrors(errorsStore, this, propertyKey, fieldErrors);
+                    setErrors(errorsStore, this, errorKey, fieldErrors);
                 }
 
                 // Валидация связанных полей
@@ -72,14 +70,14 @@ export function makeDecorator<T>(
                         (newVal as any).validity$.subscribe(
                             nestedValidity => {
                                 if (!validateKeyMetadata.toSkipFieldValidation(propertyKey, this)) {
-                                    setErrors(errorsStore, this, propertyKey, nestedValidity.errors);
+                                    setErrors(errorsStore, this, errorKey, nestedValidity.errors);
                                 }
                                 this.validity$.next(errorsStore.get(this));
                             }
                         );
                     } else {
                         const errors = validateKeyMetadata.validateField(propertyKey, newVal, this);
-                        errorsStore.get(this).errors[propertyKey] = errors;
+                        errorsStore.get(this).errors[errorKey] = errors;
                     }
                 }
 

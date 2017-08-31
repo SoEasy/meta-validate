@@ -11,7 +11,7 @@ export class MVBase implements IBaseDecoratorType {
     isTrigger: boolean = false;
     isNested: boolean = false;
 
-    constructor(public customPropertyKey?: string) {}
+    constructor(public customErrorKey?: string) {}
 
     required(): MVBase {
         this.lastValidator = 'required';

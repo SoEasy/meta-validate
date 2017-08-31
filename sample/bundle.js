@@ -696,29 +696,54 @@ Object.defineProperty(exports, "__esModule", { value: true });
 var index_1 = __webpack_require__(11);
 var BehaviorSubject_1 = __webpack_require__(12);
 __webpack_require__(22);
-var TestClass = (function () {
-    function TestClass() {
-        this.validity$ = new BehaviorSubject_1.BehaviorSubject({});
-        this.fooField = '666666';
+var NestedClass = (function () {
+    function NestedClass() {
+        this.validity$ = new BehaviorSubject_1.BehaviorSubject(null);
+        this.bar = '';
     }
     __decorate([
-        index_1.MetaValidate.String()
-            .skip(function (instance) {
-            var retVal = !instance.fooField || instance.fooField.search(/\D/g) > -1;
-            console.log('check skip', retVal);
-            return retVal;
-        })
-            .custom('length', function () { console.log('custom validate'); return true; })
+        index_1.MetaValidate.String('baz').required().make(),
+        __metadata("design:type", String)
+    ], NestedClass.prototype, "bar", void 0);
+    return NestedClass;
+}());
+var TestClass = (function () {
+    function TestClass() {
+        this.validity$ = new BehaviorSubject_1.BehaviorSubject(null);
+        this._phone = '';
+        this.n = new NestedClass();
+    }
+    Object.defineProperty(TestClass.prototype, "phone", {
+        get: function () {
+            return this._phone;
+        },
+        set: function (value) {
+            this._phone = value;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    __decorate([
+        index_1.MetaValidate.String('phone')
+            .required()
+            .length(4)
             .make(),
         __metadata("design:type", String)
-    ], TestClass.prototype, "fooField", void 0);
+    ], TestClass.prototype, "_phone", void 0);
+    __decorate([
+        index_1.MetaValidate.Nested().make(),
+        __metadata("design:type", NestedClass)
+    ], TestClass.prototype, "n", void 0);
     return TestClass;
 }());
 var t1 = new TestClass();
-t1.validity$.subscribe(function (v) { return console.log('validity t1', JSON.stringify(v), v.isFullValid()); });
-t1.fooField = '1';
-t1.fooField = '12';
-t1.fooField = '23d';
+t1.validity$.subscribe(function (v) {
+    console.log('validity t1', JSON.stringify(v), v && v.isFullValid());
+});
+// t1.phone = '1';
+// t1.phone = null;
+// t1.phone = '12';
+// t1.phone = '23d';
 // t1.relatedField = 4;
 // t1.relatedField = 6;
 // t1.nestedField.nField = '2';
@@ -827,8 +852,8 @@ return /******/ (function(modules) { // webpackBootstrap
 Object.defineProperty(exports, "__esModule", { value: true });
 var make_decorator_1 = __webpack_require__(5);
 var MVBase = (function () {
-    function MVBase(customPropertyKey) {
-        this.customPropertyKey = customPropertyKey;
+    function MVBase(customErrorKey) {
+        this.customErrorKey = customErrorKey;
         this.prebuiltValidators = {};
         this.lastValidator = null;
         this.validateWith = [];
@@ -1009,9 +1034,8 @@ function makeDecorator(validationConfig) {
             Reflect.defineMetadata(interfaces_1.VALIDATE_FIELDS_KEY, new relation_store_1.ValidateRelationStore(), target);
         }
         var existValidateMetadata = Reflect.getMetadata(interfaces_1.VALIDATE_FIELDS_KEY, target);
-        if (validationConfig.customPropertyKey) {
-            propertyKey = validationConfig.customPropertyKey;
-        }
+        var errorKey = validationConfig.customErrorKey || propertyKey;
+        existValidateMetadata.setupCustomErrorKey(propertyKey, errorKey);
         existValidateMetadata.addValidators(propertyKey, validationConfig.validators);
         if (validationConfig.validateWith) {
             existValidateMetadata.addValidateRelation(propertyKey, validationConfig.validateWith);
@@ -1047,7 +1071,7 @@ function makeDecorator(validationConfig) {
                 // Если не триггер - валидируем
                 if (!validationConfig.isTrigger) {
                     var fieldErrors = validateKeyMetadata.validateField(propertyKey, newVal, this);
-                    setErrors(errorsStore, this, propertyKey, fieldErrors);
+                    setErrors(errorsStore, this, errorKey, fieldErrors);
                 }
                 // Валидация связанных полей
                 var relatedErrors = validateKeyMetadata.validateRelatedFields(propertyKey, this);
@@ -1056,14 +1080,14 @@ function makeDecorator(validationConfig) {
                     if (newVal && newVal.validity$) {
                         newVal.validity$.subscribe(function (nestedValidity) {
                             if (!validateKeyMetadata.toSkipFieldValidation(propertyKey, _this)) {
-                                setErrors(errorsStore, _this, propertyKey, nestedValidity.errors);
+                                setErrors(errorsStore, _this, errorKey, nestedValidity.errors);
                             }
                             _this.validity$.next(errorsStore.get(_this));
                         });
                     }
                     else {
                         var errors = validateKeyMetadata.validateField(propertyKey, newVal, this);
-                        errorsStore.get(this).errors[propertyKey] = errors;
+                        errorsStore.get(this).errors[errorKey] = errors;
                     }
                 }
                 this.validity$.next(errorsStore.get(this));
@@ -1128,6 +1152,7 @@ var ValidateRelationStore = (function () {
          * @description Хранилище вложенных полей, чтобы лишний раз не дергать метадату при валидации зависимых полей
          */
         this.nestedFields = [];
+        this.customErrorKeys = {};
         this.errorsStore = new WeakMap();
         //
         // private setFieldErrors(field: string, validity: MVFieldValidity): void {
@@ -1137,6 +1162,9 @@ var ValidateRelationStore = (function () {
         //     return this.errorsStore;
         // }
     }
+    ValidateRelationStore.prototype.getErrorKey = function (propertyKey) {
+        return this.customErrorKeys[propertyKey] || propertyKey;
+    };
     ValidateRelationStore.prototype.addValidators = function (key, validators) {
         this.validatorsStore[key] = __assign({}, this.validatorsStore[key], validators);
         var existsValidators = this.validatorsStore[key] || {};
@@ -1173,6 +1201,9 @@ var ValidateRelationStore = (function () {
     };
     ValidateRelationStore.prototype.setupValidatorConditions = function (field, conditions) {
         this.validatorConditions[field] = conditions;
+    };
+    ValidateRelationStore.prototype.setupCustomErrorKey = function (propertyKey, errorKey) {
+        this.customErrorKeys[propertyKey] = errorKey;
     };
     /**
      * @description Условие полного скипа валидации
@@ -1213,7 +1244,7 @@ var ValidateRelationStore = (function () {
         for (var _i = 0, relatedFields_1 = relatedFields; _i < relatedFields_1.length; _i++) {
             var relatedField = relatedFields_1[_i];
             var relatedFieldValue = instance[relatedField];
-            errors[relatedField] = this.validateField(relatedField, relatedFieldValue, instance);
+            errors[this.getErrorKey(relatedField)] = this.validateField(relatedField, relatedFieldValue, instance);
         }
         return errors;
     };
@@ -1227,8 +1258,8 @@ var ValidateRelationStore = (function () {
         }
         var errors = {};
         for (var _i = 0, _a = Object.keys(nestedMetadata.validatorsStore); _i < _a.length; _i++) {
-            var nestedField = _a[_i];
-            errors[nestedField] = nestedMetadata.validateField(nestedField, value[nestedField], value);
+            var propertyKey = _a[_i];
+            errors[nestedMetadata.getErrorKey(propertyKey)] = nestedMetadata.validateField(propertyKey, value[propertyKey], value);
         }
         return errors;
     };
@@ -1444,8 +1475,10 @@ var MVString = (function (_super) {
             var compareValue = typeof pattern === 'function' ? pattern(i) : pattern;
             if (!compareValue) {
                 console.warn("RegExp validator '" + name + "' return null pattern");
+                return true;
             }
-            return !v || !compareValue || !compareValue.test(v);
+            compareValue = new RegExp(compareValue);
+            return !v || !compareValue.test(v);
         };
         return this;
     };

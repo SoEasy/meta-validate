@@ -85,8 +85,8 @@ return /******/ (function(modules) { // webpackBootstrap
 Object.defineProperty(exports, "__esModule", { value: true });
 var make_decorator_1 = __webpack_require__(5);
 var MVBase = (function () {
-    function MVBase(customPropertyKey) {
-        this.customPropertyKey = customPropertyKey;
+    function MVBase(customErrorKey) {
+        this.customErrorKey = customErrorKey;
         this.prebuiltValidators = {};
         this.lastValidator = null;
         this.validateWith = [];
@@ -267,9 +267,8 @@ function makeDecorator(validationConfig) {
             Reflect.defineMetadata(interfaces_1.VALIDATE_FIELDS_KEY, new relation_store_1.ValidateRelationStore(), target);
         }
         var existValidateMetadata = Reflect.getMetadata(interfaces_1.VALIDATE_FIELDS_KEY, target);
-        if (validationConfig.customPropertyKey) {
-            propertyKey = validationConfig.customPropertyKey;
-        }
+        var errorKey = validationConfig.customErrorKey || propertyKey;
+        existValidateMetadata.setupCustomErrorKey(propertyKey, errorKey);
         existValidateMetadata.addValidators(propertyKey, validationConfig.validators);
         if (validationConfig.validateWith) {
             existValidateMetadata.addValidateRelation(propertyKey, validationConfig.validateWith);
@@ -305,7 +304,7 @@ function makeDecorator(validationConfig) {
                 // Если не триггер - валидируем
                 if (!validationConfig.isTrigger) {
                     var fieldErrors = validateKeyMetadata.validateField(propertyKey, newVal, this);
-                    setErrors(errorsStore, this, propertyKey, fieldErrors);
+                    setErrors(errorsStore, this, errorKey, fieldErrors);
                 }
                 // Валидация связанных полей
                 var relatedErrors = validateKeyMetadata.validateRelatedFields(propertyKey, this);
@@ -314,14 +313,14 @@ function makeDecorator(validationConfig) {
                     if (newVal && newVal.validity$) {
                         newVal.validity$.subscribe(function (nestedValidity) {
                             if (!validateKeyMetadata.toSkipFieldValidation(propertyKey, _this)) {
-                                setErrors(errorsStore, _this, propertyKey, nestedValidity.errors);
+                                setErrors(errorsStore, _this, errorKey, nestedValidity.errors);
                             }
                             _this.validity$.next(errorsStore.get(_this));
                         });
                     }
                     else {
                         var errors = validateKeyMetadata.validateField(propertyKey, newVal, this);
-                        errorsStore.get(this).errors[propertyKey] = errors;
+                        errorsStore.get(this).errors[errorKey] = errors;
                     }
                 }
                 this.validity$.next(errorsStore.get(this));
@@ -386,6 +385,7 @@ var ValidateRelationStore = (function () {
          * @description Хранилище вложенных полей, чтобы лишний раз не дергать метадату при валидации зависимых полей
          */
         this.nestedFields = [];
+        this.customErrorKeys = {};
         this.errorsStore = new WeakMap();
         //
         // private setFieldErrors(field: string, validity: MVFieldValidity): void {
@@ -395,6 +395,9 @@ var ValidateRelationStore = (function () {
         //     return this.errorsStore;
         // }
     }
+    ValidateRelationStore.prototype.getErrorKey = function (propertyKey) {
+        return this.customErrorKeys[propertyKey] || propertyKey;
+    };
     ValidateRelationStore.prototype.addValidators = function (key, validators) {
         this.validatorsStore[key] = __assign({}, this.validatorsStore[key], validators);
         var existsValidators = this.validatorsStore[key] || {};
@@ -431,6 +434,9 @@ var ValidateRelationStore = (function () {
     };
     ValidateRelationStore.prototype.setupValidatorConditions = function (field, conditions) {
         this.validatorConditions[field] = conditions;
+    };
+    ValidateRelationStore.prototype.setupCustomErrorKey = function (propertyKey, errorKey) {
+        this.customErrorKeys[propertyKey] = errorKey;
     };
     /**
      * @description Условие полного скипа валидации
@@ -471,7 +477,7 @@ var ValidateRelationStore = (function () {
         for (var _i = 0, relatedFields_1 = relatedFields; _i < relatedFields_1.length; _i++) {
             var relatedField = relatedFields_1[_i];
             var relatedFieldValue = instance[relatedField];
-            errors[relatedField] = this.validateField(relatedField, relatedFieldValue, instance);
+            errors[this.getErrorKey(relatedField)] = this.validateField(relatedField, relatedFieldValue, instance);
         }
         return errors;
     };
@@ -485,8 +491,8 @@ var ValidateRelationStore = (function () {
         }
         var errors = {};
         for (var _i = 0, _a = Object.keys(nestedMetadata.validatorsStore); _i < _a.length; _i++) {
-            var nestedField = _a[_i];
-            errors[nestedField] = nestedMetadata.validateField(nestedField, value[nestedField], value);
+            var propertyKey = _a[_i];
+            errors[nestedMetadata.getErrorKey(propertyKey)] = nestedMetadata.validateField(propertyKey, value[propertyKey], value);
         }
         return errors;
     };

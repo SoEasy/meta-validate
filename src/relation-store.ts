@@ -32,7 +32,13 @@ export class ValidateRelationStore {
      */
     private nestedFields: Array<string> = [];
 
+    private customErrorKeys: Record<string, string> = {};
+
     errorsStore: WeakMap<any, Validity> = new WeakMap();
+    
+    getErrorKey(propertyKey: string): string {
+        return this.customErrorKeys[propertyKey] || propertyKey;
+    }
 
     addValidators(key: string, validators: Record<string, MVValidator>): void {
         this.validatorsStore[key] = { ...this.validatorsStore[key], ...validators };
@@ -73,6 +79,10 @@ export class ValidateRelationStore {
 
     setupValidatorConditions(field: string, conditions: Record<string, (instance: any) => boolean>): void {
         this.validatorConditions[field] = conditions;
+    }
+
+    setupCustomErrorKey(propertyKey: string, errorKey: string): void {
+        this.customErrorKeys[propertyKey] = errorKey;
     }
 
     /**
@@ -119,7 +129,7 @@ export class ValidateRelationStore {
         const errors = {};
         for (const relatedField of relatedFields) {
             const relatedFieldValue = instance[relatedField];
-            errors[relatedField] = this.validateField(relatedField, relatedFieldValue, instance);
+            errors[this.getErrorKey(relatedField)] = this.validateField(relatedField, relatedFieldValue, instance);
         }
         return errors;
     }
@@ -129,8 +139,8 @@ export class ValidateRelationStore {
         const nestedMetadata: ValidateRelationStore = (Reflect as any).getMetadata(VALIDATE_FIELDS_KEY, Object.getPrototypeOf(value));
         if (!nestedMetadata) { return {}; }
         const errors = {};
-        for (const nestedField of Object.keys(nestedMetadata.validatorsStore)) {
-            errors[nestedField] = nestedMetadata.validateField(nestedField, value[nestedField], value);
+        for (const propertyKey of Object.keys(nestedMetadata.validatorsStore)) {
+            errors[nestedMetadata.getErrorKey(propertyKey)] = nestedMetadata.validateField(propertyKey, value[propertyKey], value);
         }
         return errors;
     }

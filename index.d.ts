@@ -92,7 +92,7 @@ export class MVString<T> extends MVBase implements IBaseDecoratorType {
 }
 
 export class MVBase implements IBaseDecoratorType {
-    customPropertyKey: string;
+    customErrorKey: string;
     protected prebuiltValidators: Record<string, MVValidator>;
     protected lastValidator: string;
     validateWith: Array<string>;
@@ -101,7 +101,7 @@ export class MVBase implements IBaseDecoratorType {
     protected converters: Array<(value: any) => any>;
     isTrigger: boolean;
     isNested: boolean;
-    constructor(customPropertyKey?: string);
+    constructor(customErrorKey?: string);
     required(): MVBase;
     skipIf(condition: (i: any) => boolean): MVBase;
     skip(condition: (i: any) => boolean): MVBase;
