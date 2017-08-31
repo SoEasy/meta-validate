@@ -66,11 +66,13 @@ export class MVString<T> extends MVBase implements IBaseDecoratorType {
     regex(pattern: MVStringArg<RegExp, T>, name: string): MVString<T> {
         this.lastValidator = name;
         this.prebuiltValidators[name] = (v: string, i: T): boolean => {
-            const compareValue = typeof pattern === 'function' ? pattern(i) : pattern;
+            let compareValue = typeof pattern === 'function' ? pattern(i) : pattern;
             if (!compareValue) {
                 console.warn(`RegExp validator '${name}' return null pattern`);
+                return true;
             }
-            return !v || !compareValue || !compareValue.test(v);
+            compareValue = new RegExp(compareValue);
+            return !v || !compareValue.test(v);
         };
         return this;
     }
