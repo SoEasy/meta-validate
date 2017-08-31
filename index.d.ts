@@ -44,11 +44,11 @@ export class Validity {
 }
 
 export class MetaValidate {
-    static Number<T>(): MVNumber<T>;
-    static String<T>(): MVString<T>;
+    static Number<T>(customName: string): MVNumber<T>;
+    static String<T>(customName: string): MVString<T>;
     static Trigger(): MVBase;
-    static Nested(): MVBase;
-    static Base(): MVBase;
+    static Nested(customName: string): MVBase;
+    static Base(customName: string): MVBase;
 }
 
 export type MVNumberArg<T> = number | ((instance: T) => number);
@@ -92,6 +92,7 @@ export class MVString<T> extends MVBase implements IBaseDecoratorType {
 }
 
 export class MVBase implements IBaseDecoratorType {
+    customPropertyKey: string;
     protected prebuiltValidators: Record<string, MVValidator>;
     protected lastValidator: string;
     validateWith: Array<string>;
@@ -100,6 +101,7 @@ export class MVBase implements IBaseDecoratorType {
     protected converters: Array<(value: any) => any>;
     isTrigger: boolean;
     isNested: boolean;
+    constructor(customPropertyKey?: string);
     required(): MVBase;
     skipIf(condition: (i: any) => boolean): MVBase;
     skip(condition: (i: any) => boolean): MVBase;

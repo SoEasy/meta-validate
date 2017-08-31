@@ -85,7 +85,8 @@ return /******/ (function(modules) { // webpackBootstrap
 Object.defineProperty(exports, "__esModule", { value: true });
 var make_decorator_1 = __webpack_require__(5);
 var MVBase = (function () {
-    function MVBase() {
+    function MVBase(customPropertyKey) {
+        this.customPropertyKey = customPropertyKey;
         this.prebuiltValidators = {};
         this.lastValidator = null;
         this.validateWith = [];
@@ -213,24 +214,24 @@ var base_1 = __webpack_require__(0);
 var MetaValidate = (function () {
     function MetaValidate() {
     }
-    MetaValidate.Number = function () {
-        return new number_1.MVNumber();
+    MetaValidate.Number = function (customName) {
+        return new number_1.MVNumber(customName);
     };
-    MetaValidate.String = function () {
-        return new string_1.MVString();
+    MetaValidate.String = function (customName) {
+        return new string_1.MVString(customName);
     };
     MetaValidate.Trigger = function () {
         var retVal = new base_1.MVBase();
         retVal.isTrigger = true;
         return retVal;
     };
-    MetaValidate.Nested = function () {
-        var retVal = new base_1.MVBase();
+    MetaValidate.Nested = function (customName) {
+        var retVal = new base_1.MVBase(customName);
         retVal.isNested = true;
         return retVal;
     };
-    MetaValidate.Base = function () {
-        return new base_1.MVBase();
+    MetaValidate.Base = function (customName) {
+        return new base_1.MVBase(customName);
     };
     return MetaValidate;
 }());
@@ -266,6 +267,9 @@ function makeDecorator(validationConfig) {
             Reflect.defineMetadata(interfaces_1.VALIDATE_FIELDS_KEY, new relation_store_1.ValidateRelationStore(), target);
         }
         var existValidateMetadata = Reflect.getMetadata(interfaces_1.VALIDATE_FIELDS_KEY, target);
+        if (validationConfig.customPropertyKey) {
+            propertyKey = validationConfig.customPropertyKey;
+        }
         existValidateMetadata.addValidators(propertyKey, validationConfig.validators);
         if (validationConfig.validateWith) {
             existValidateMetadata.addValidateRelation(propertyKey, validationConfig.validateWith);

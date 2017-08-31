@@ -60,77 +60,11 @@
 /******/ 	__webpack_require__.p = "";
 /******/
 /******/ 	// Load entry module and return exports
-/******/ 	return __webpack_require__(__webpack_require__.s = 0);
+/******/ 	return __webpack_require__(__webpack_require__.s = 9);
 /******/ })
 /************************************************************************/
 /******/ ([
 /* 0 */
-/***/ (function(module, exports, __webpack_require__) {
-
-module.exports = __webpack_require__(1);
-
-
-/***/ }),
-/* 1 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
-    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
-    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
-    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
-    return c > 3 && r && Object.defineProperty(target, key, r), r;
-};
-var __metadata = (this && this.__metadata) || function (k, v) {
-    if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
-};
-Object.defineProperty(exports, "__esModule", { value: true });
-var index_1 = __webpack_require__(11);
-var BehaviorSubject_1 = __webpack_require__(12);
-__webpack_require__(22);
-var TestClass = (function () {
-    function TestClass() {
-        this.validity$ = new BehaviorSubject_1.BehaviorSubject({});
-        this.fooField = '666666';
-    }
-    __decorate([
-        index_1.MetaValidate.String()
-            .skip(function (instance) {
-            var retVal = !instance.fooField || instance.fooField.search(/\D/g) > -1;
-            console.log('check skip', retVal);
-            return retVal;
-        })
-            .custom('length', function () { console.log('custom validate'); return true; })
-            .make(),
-        __metadata("design:type", String)
-    ], TestClass.prototype, "fooField", void 0);
-    return TestClass;
-}());
-var t1 = new TestClass();
-t1.validity$.subscribe(function (v) { return console.log('validity t1', JSON.stringify(v), v.isFullValid()); });
-t1.fooField = '1';
-t1.fooField = '12';
-t1.fooField = '23d';
-// t1.relatedField = 4;
-// t1.relatedField = 6;
-// t1.nestedField.nField = '2';
-// t1.relatedField = 7;
-// t1.nestedField.nField = null;
-// t1.nestedField.nField = '2';
-// t1.nestedField.nField = null;
-// t1.toSkip = false;
-// t1.nestedField.nField = '3';
-//
-// t1.nestedField.nField = 'bar';
-// t1.nestedField.nField = null;
-//
-// t1.nestedField = new NestedClass();
-// t1.nestedField.nField = 'hello!';
-
-
-/***/ }),
-/* 2 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -153,19 +87,19 @@ exports.root = _root;
     }
 })();
 //# sourceMappingURL=root.js.map
-/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(5)))
+/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(3)))
 
 /***/ }),
-/* 3 */
+/* 1 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 var isArray_1 = __webpack_require__(16);
 var isObject_1 = __webpack_require__(17);
-var isFunction_1 = __webpack_require__(7);
+var isFunction_1 = __webpack_require__(5);
 var tryCatch_1 = __webpack_require__(18);
-var errorObject_1 = __webpack_require__(8);
+var errorObject_1 = __webpack_require__(6);
 var UnsubscriptionError_1 = __webpack_require__(19);
 /**
  * Represents a disposable resource, such as the execution of an Observable. A
@@ -355,12 +289,12 @@ function flattenUnsubscriptionErrors(errors) {
 //# sourceMappingURL=Subscription.js.map
 
 /***/ }),
-/* 4 */
+/* 2 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
-var root_1 = __webpack_require__(2);
+var root_1 = __webpack_require__(0);
 var Symbol = root_1.root.Symbol;
 exports.rxSubscriber = (typeof Symbol === 'function' && typeof Symbol.for === 'function') ?
     Symbol.for('rxSubscriber') : '@@rxSubscriber';
@@ -371,7 +305,7 @@ exports.$$rxSubscriber = exports.rxSubscriber;
 //# sourceMappingURL=rxSubscriber.js.map
 
 /***/ }),
-/* 5 */
+/* 3 */
 /***/ (function(module, exports) {
 
 var g;
@@ -398,7 +332,7 @@ module.exports = g;
 
 
 /***/ }),
-/* 6 */
+/* 4 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -408,10 +342,10 @@ var __extends = (this && this.__extends) || function (d, b) {
     function __() { this.constructor = d; }
     d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
 };
-var isFunction_1 = __webpack_require__(7);
-var Subscription_1 = __webpack_require__(3);
-var Observer_1 = __webpack_require__(9);
-var rxSubscriber_1 = __webpack_require__(4);
+var isFunction_1 = __webpack_require__(5);
+var Subscription_1 = __webpack_require__(1);
+var Observer_1 = __webpack_require__(7);
+var rxSubscriber_1 = __webpack_require__(2);
 /**
  * Implements the {@link Observer} interface and extends the
  * {@link Subscription} class. While the {@link Observer} is the public API for
@@ -668,7 +602,7 @@ var SafeSubscriber = (function (_super) {
 //# sourceMappingURL=Subscriber.js.map
 
 /***/ }),
-/* 7 */
+/* 5 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -680,7 +614,7 @@ exports.isFunction = isFunction;
 //# sourceMappingURL=isFunction.js.map
 
 /***/ }),
-/* 8 */
+/* 6 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -690,7 +624,7 @@ exports.errorObject = { e: {} };
 //# sourceMappingURL=errorObject.js.map
 
 /***/ }),
-/* 9 */
+/* 7 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -704,7 +638,7 @@ exports.empty = {
 //# sourceMappingURL=Observer.js.map
 
 /***/ }),
-/* 10 */
+/* 8 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -735,6 +669,72 @@ var ObjectUnsubscribedError = (function (_super) {
 }(Error));
 exports.ObjectUnsubscribedError = ObjectUnsubscribedError;
 //# sourceMappingURL=ObjectUnsubscribedError.js.map
+
+/***/ }),
+/* 9 */
+/***/ (function(module, exports, __webpack_require__) {
+
+module.exports = __webpack_require__(10);
+
+
+/***/ }),
+/* 10 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
+    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
+    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
+    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
+    return c > 3 && r && Object.defineProperty(target, key, r), r;
+};
+var __metadata = (this && this.__metadata) || function (k, v) {
+    if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+var index_1 = __webpack_require__(11);
+var BehaviorSubject_1 = __webpack_require__(12);
+__webpack_require__(22);
+var TestClass = (function () {
+    function TestClass() {
+        this.validity$ = new BehaviorSubject_1.BehaviorSubject({});
+        this.fooField = '666666';
+    }
+    __decorate([
+        index_1.MetaValidate.String()
+            .skip(function (instance) {
+            var retVal = !instance.fooField || instance.fooField.search(/\D/g) > -1;
+            console.log('check skip', retVal);
+            return retVal;
+        })
+            .custom('length', function () { console.log('custom validate'); return true; })
+            .make(),
+        __metadata("design:type", String)
+    ], TestClass.prototype, "fooField", void 0);
+    return TestClass;
+}());
+var t1 = new TestClass();
+t1.validity$.subscribe(function (v) { return console.log('validity t1', JSON.stringify(v), v.isFullValid()); });
+t1.fooField = '1';
+t1.fooField = '12';
+t1.fooField = '23d';
+// t1.relatedField = 4;
+// t1.relatedField = 6;
+// t1.nestedField.nField = '2';
+// t1.relatedField = 7;
+// t1.nestedField.nField = null;
+// t1.nestedField.nField = '2';
+// t1.nestedField.nField = null;
+// t1.toSkip = false;
+// t1.nestedField.nField = '3';
+//
+// t1.nestedField.nField = 'bar';
+// t1.nestedField.nField = null;
+//
+// t1.nestedField = new NestedClass();
+// t1.nestedField.nField = 'hello!';
+
 
 /***/ }),
 /* 11 */
@@ -827,7 +827,8 @@ return /******/ (function(modules) { // webpackBootstrap
 Object.defineProperty(exports, "__esModule", { value: true });
 var make_decorator_1 = __webpack_require__(5);
 var MVBase = (function () {
-    function MVBase() {
+    function MVBase(customPropertyKey) {
+        this.customPropertyKey = customPropertyKey;
         this.prebuiltValidators = {};
         this.lastValidator = null;
         this.validateWith = [];
@@ -955,24 +956,24 @@ var base_1 = __webpack_require__(0);
 var MetaValidate = (function () {
     function MetaValidate() {
     }
-    MetaValidate.Number = function () {
-        return new number_1.MVNumber();
+    MetaValidate.Number = function (customName) {
+        return new number_1.MVNumber(customName);
     };
-    MetaValidate.String = function () {
-        return new string_1.MVString();
+    MetaValidate.String = function (customName) {
+        return new string_1.MVString(customName);
     };
     MetaValidate.Trigger = function () {
         var retVal = new base_1.MVBase();
         retVal.isTrigger = true;
         return retVal;
     };
-    MetaValidate.Nested = function () {
-        var retVal = new base_1.MVBase();
+    MetaValidate.Nested = function (customName) {
+        var retVal = new base_1.MVBase(customName);
         retVal.isNested = true;
         return retVal;
     };
-    MetaValidate.Base = function () {
-        return new base_1.MVBase();
+    MetaValidate.Base = function (customName) {
+        return new base_1.MVBase(customName);
     };
     return MetaValidate;
 }());
@@ -1008,6 +1009,9 @@ function makeDecorator(validationConfig) {
             Reflect.defineMetadata(interfaces_1.VALIDATE_FIELDS_KEY, new relation_store_1.ValidateRelationStore(), target);
         }
         var existValidateMetadata = Reflect.getMetadata(interfaces_1.VALIDATE_FIELDS_KEY, target);
+        if (validationConfig.customPropertyKey) {
+            propertyKey = validationConfig.customPropertyKey;
+        }
         existValidateMetadata.addValidators(propertyKey, validationConfig.validators);
         if (validationConfig.validateWith) {
             existValidateMetadata.addValidateRelation(propertyKey, validationConfig.validateWith);
@@ -1183,9 +1187,6 @@ var ValidateRelationStore = (function () {
     };
     ValidateRelationStore.prototype.validateField = function (field, newVal, instance) {
         var skipValidation = this.toSkipFieldValidation(field, instance);
-        if (skipValidation) {
-            return {};
-        }
         var errors = {};
         var validators = this.getValidators(field);
         if (validators) {
@@ -1489,7 +1490,7 @@ var __extends = (this && this.__extends) || function (d, b) {
     d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
 };
 var Subject_1 = __webpack_require__(13);
-var ObjectUnsubscribedError_1 = __webpack_require__(10);
+var ObjectUnsubscribedError_1 = __webpack_require__(8);
 /**
  * @class BehaviorSubject<T>
  */
@@ -1544,11 +1545,11 @@ var __extends = (this && this.__extends) || function (d, b) {
     d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
 };
 var Observable_1 = __webpack_require__(14);
-var Subscriber_1 = __webpack_require__(6);
-var Subscription_1 = __webpack_require__(3);
-var ObjectUnsubscribedError_1 = __webpack_require__(10);
+var Subscriber_1 = __webpack_require__(4);
+var Subscription_1 = __webpack_require__(1);
+var ObjectUnsubscribedError_1 = __webpack_require__(8);
 var SubjectSubscription_1 = __webpack_require__(21);
-var rxSubscriber_1 = __webpack_require__(4);
+var rxSubscriber_1 = __webpack_require__(2);
 /**
  * @class SubjectSubscriber<T>
  */
@@ -1712,7 +1713,7 @@ exports.AnonymousSubject = AnonymousSubject;
 
 "use strict";
 
-var root_1 = __webpack_require__(2);
+var root_1 = __webpack_require__(0);
 var toSubscriber_1 = __webpack_require__(15);
 var observable_1 = __webpack_require__(20);
 /**
@@ -1974,9 +1975,9 @@ exports.Observable = Observable;
 
 "use strict";
 
-var Subscriber_1 = __webpack_require__(6);
-var rxSubscriber_1 = __webpack_require__(4);
-var Observer_1 = __webpack_require__(9);
+var Subscriber_1 = __webpack_require__(4);
+var rxSubscriber_1 = __webpack_require__(2);
+var Observer_1 = __webpack_require__(7);
 function toSubscriber(nextOrObserver, error, complete) {
     if (nextOrObserver) {
         if (nextOrObserver instanceof Subscriber_1.Subscriber) {
@@ -2021,7 +2022,7 @@ exports.isObject = isObject;
 
 "use strict";
 
-var errorObject_1 = __webpack_require__(8);
+var errorObject_1 = __webpack_require__(6);
 var tryCatchTarget;
 function tryCatcher() {
     try {
@@ -2077,7 +2078,7 @@ exports.UnsubscriptionError = UnsubscriptionError;
 
 "use strict";
 
-var root_1 = __webpack_require__(2);
+var root_1 = __webpack_require__(0);
 function getSymbolObservable(context) {
     var $$observable;
     var Symbol = context.Symbol;
@@ -2114,7 +2115,7 @@ var __extends = (this && this.__extends) || function (d, b) {
     function __() { this.constructor = d; }
     d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
 };
-var Subscription_1 = __webpack_require__(3);
+var Subscription_1 = __webpack_require__(1);
 /**
  * We need this JSDoc comment for affecting ESDoc.
  * @ignore
@@ -3278,7 +3279,7 @@ var Reflect;
             Function("return this;")());
 })(Reflect || (Reflect = {}));
 //# sourceMappingURL=Reflect.js.map
-/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(23), __webpack_require__(5)))
+/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(23), __webpack_require__(3)))
 
 /***/ }),
 /* 23 */

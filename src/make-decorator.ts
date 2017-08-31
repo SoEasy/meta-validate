@@ -6,11 +6,15 @@ import { Validity } from './validity';
 export function makeDecorator<T>(
     validationConfig: MVBase
 ): any {
-    return (target: T, propertyKey: keyof T): PropertyDescriptor => {
+    return (target: T, propertyKey: string): PropertyDescriptor => {
         if (!(Reflect as any).hasMetadata(VALIDATE_FIELDS_KEY, target)) {
             (Reflect as any).defineMetadata(VALIDATE_FIELDS_KEY, new ValidateRelationStore(), target);
         }
         const existValidateMetadata = (Reflect as any).getMetadata(VALIDATE_FIELDS_KEY, target);
+
+        if (validationConfig.customPropertyKey) {
+            propertyKey = validationConfig.customPropertyKey;
+        }
 
         existValidateMetadata.addValidators(propertyKey, validationConfig.validators);
         if (validationConfig.validateWith) {
