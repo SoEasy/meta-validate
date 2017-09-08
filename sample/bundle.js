@@ -683,6 +683,16 @@ module.exports = __webpack_require__(10);
 
 "use strict";
 
+var __extends = (this && this.__extends) || (function () {
+    var extendStatics = Object.setPrototypeOf ||
+        ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+        function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+    return function (d, b) {
+        extendStatics(d, b);
+        function __() { this.constructor = d; }
+        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+    };
+})();
 var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
     var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
     if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
@@ -696,43 +706,49 @@ Object.defineProperty(exports, "__esModule", { value: true });
 var index_1 = __webpack_require__(11);
 var BehaviorSubject_1 = __webpack_require__(12);
 __webpack_require__(22);
-var NestedClass = (function () {
-    function NestedClass() {
-        this.validity$ = new BehaviorSubject_1.BehaviorSubject(null);
-        this.bar = '';
+var CustomValidators = (function (_super) {
+    __extends(CustomValidators, _super);
+    function CustomValidators() {
+        return _super !== null && _super.apply(this, arguments) || this;
     }
-    __decorate([
-        index_1.MetaValidate.String('baz').required().make(),
-        __metadata("design:type", String)
-    ], NestedClass.prototype, "bar", void 0);
-    return NestedClass;
-}());
+    CustomValidators.prototype.foo = function () {
+        this.lastValidator = 'foo';
+        this.prebuiltValidators['foo'] = function (v) {
+            console.log('foo validation');
+            return !!v;
+        };
+        return this;
+    };
+    return CustomValidators;
+}(index_1.MVBase));
+index_1.MetaValidate.Register(CustomValidators);
+// class NestedClass implements ReceiveValidity {
+//     validity$: BehaviorSubject<Validity> = new BehaviorSubject<Validity>(null);
+//
+//     @MetaValidate.String('baz').required().make()
+//     bar: string = '';
+// }
 var TestClass = (function () {
     function TestClass() {
         this.validity$ = new BehaviorSubject_1.BehaviorSubject(null);
-        this._phone = '';
-        this.n = new NestedClass();
+        // @MetaValidate.String<TestClass>('phone')
+        // .required()
+        // .length(4)
+        // .make()
+        // _phone: string = '';
+        //
+        // get phone(): string {
+        //     return this._phone;
+        // }
+        //
+        // set phone(value: string) {
+        //     this._phone = value;
+        // }
+        this.n = '123312';
     }
-    Object.defineProperty(TestClass.prototype, "phone", {
-        get: function () {
-            return this._phone;
-        },
-        set: function (value) {
-            this._phone = value;
-        },
-        enumerable: true,
-        configurable: true
-    });
     __decorate([
-        index_1.MetaValidate.String('phone')
-            .required()
-            .length(4)
-            .make(),
+        index_1.MetaValidate.Get(CustomValidators).foo().make(),
         __metadata("design:type", String)
-    ], TestClass.prototype, "_phone", void 0);
-    __decorate([
-        index_1.MetaValidate.Nested().make(),
-        __metadata("design:type", NestedClass)
     ], TestClass.prototype, "n", void 0);
     return TestClass;
 }());
@@ -740,6 +756,8 @@ var t1 = new TestClass();
 t1.validity$.subscribe(function (v) {
     console.log('validity t1', JSON.stringify(v), v && v.isFullValid());
 });
+t1.n = null;
+t1.n = 'hello';
 // t1.phone = '1';
 // t1.phone = null;
 // t1.phone = '12';
@@ -978,6 +996,8 @@ Object.defineProperty(exports, "__esModule", { value: true });
 var number_1 = __webpack_require__(7);
 var string_1 = __webpack_require__(8);
 var base_1 = __webpack_require__(0);
+var base_2 = __webpack_require__(0);
+exports.MVBase = base_2.MVBase;
 var MetaValidate = (function () {
     function MetaValidate() {
     }
@@ -1000,6 +1020,17 @@ var MetaValidate = (function () {
     MetaValidate.Base = function (customName) {
         return new base_1.MVBase(customName);
     };
+    MetaValidate.Register = function (validatorsClass) {
+        MetaValidate.customValidatorsStore.set(validatorsClass, validatorsClass);
+    };
+    MetaValidate.Get = function (validatorClass) {
+        if (!MetaValidate.customValidatorsStore.has(validatorClass)) {
+            throw new Error("No validators registered for class " + validatorClass.name);
+        }
+        var validatorsConstructor = MetaValidate.customValidatorsStore.get(validatorClass);
+        return new validatorsConstructor();
+    };
+    MetaValidate.customValidatorsStore = new WeakMap();
     return MetaValidate;
 }());
 exports.MetaValidate = MetaValidate;
@@ -1016,6 +1047,7 @@ var validity_1 = __webpack_require__(1);
 exports.Validity = validity_1.Validity;
 var types_1 = __webpack_require__(3);
 exports.MetaValidate = types_1.MetaValidate;
+exports.MVBase = types_1.MVBase;
 
 
 /***/ }),
@@ -1154,13 +1186,6 @@ var ValidateRelationStore = (function () {
         this.nestedFields = [];
         this.customErrorKeys = {};
         this.errorsStore = new WeakMap();
-        //
-        // private setFieldErrors(field: string, validity: MVFieldValidity): void {
-        //     this.errorsStore.errors[field] = validity;
-        // }
-        // getErrors(): Validity {
-        //     return this.errorsStore;
-        // }
     }
     ValidateRelationStore.prototype.getErrorKey = function (propertyKey) {
         return this.customErrorKeys[propertyKey] || propertyKey;

@@ -211,6 +211,8 @@ Object.defineProperty(exports, "__esModule", { value: true });
 var number_1 = __webpack_require__(7);
 var string_1 = __webpack_require__(8);
 var base_1 = __webpack_require__(0);
+var base_2 = __webpack_require__(0);
+exports.MVBase = base_2.MVBase;
 var MetaValidate = (function () {
     function MetaValidate() {
     }
@@ -233,6 +235,17 @@ var MetaValidate = (function () {
     MetaValidate.Base = function (customName) {
         return new base_1.MVBase(customName);
     };
+    MetaValidate.Register = function (validatorsClass) {
+        MetaValidate.customValidatorsStore.set(validatorsClass, validatorsClass);
+    };
+    MetaValidate.Get = function (validatorClass) {
+        if (!MetaValidate.customValidatorsStore.has(validatorClass)) {
+            throw new Error("No validators registered for class " + validatorClass.name);
+        }
+        var validatorsConstructor = MetaValidate.customValidatorsStore.get(validatorClass);
+        return new validatorsConstructor();
+    };
+    MetaValidate.customValidatorsStore = new WeakMap();
     return MetaValidate;
 }());
 exports.MetaValidate = MetaValidate;
@@ -249,6 +262,7 @@ var validity_1 = __webpack_require__(1);
 exports.Validity = validity_1.Validity;
 var types_1 = __webpack_require__(3);
 exports.MetaValidate = types_1.MetaValidate;
+exports.MVBase = types_1.MVBase;
 
 
 /***/ }),
@@ -387,13 +401,6 @@ var ValidateRelationStore = (function () {
         this.nestedFields = [];
         this.customErrorKeys = {};
         this.errorsStore = new WeakMap();
-        //
-        // private setFieldErrors(field: string, validity: MVFieldValidity): void {
-        //     this.errorsStore.errors[field] = validity;
-        // }
-        // getErrors(): Validity {
-        //     return this.errorsStore;
-        // }
     }
     ValidateRelationStore.prototype.getErrorKey = function (propertyKey) {
         return this.customErrorKeys[propertyKey] || propertyKey;

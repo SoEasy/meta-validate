@@ -49,6 +49,8 @@ export class MetaValidate {
     static Trigger(): MVBase;
     static Nested(customName?: string): MVBase;
     static Base(customName?: string): MVBase;
+    static Register<T extends MVBase>(validatorsClass: new () => T): void;
+    static Get<T extends MVBase>(validatorClass: new () => T): T;
 }
 
 export type MVNumberArg<T> = number | ((instance: T) => number);
