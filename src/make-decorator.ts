@@ -14,7 +14,10 @@ export function makeDecorator<T>(
         const errorKey = validationConfig.customErrorKey || propertyKey;
         existValidateMetadata.setupCustomErrorKey(propertyKey, errorKey);
 
-        existValidateMetadata.addValidators(propertyKey, validationConfig.validators);
+        if (!validationConfig.isTrigger) {
+            existValidateMetadata.addValidators(propertyKey, validationConfig.validators);
+        }
+
         if (validationConfig.validateWith) {
             existValidateMetadata.addValidateRelation(propertyKey, validationConfig.validateWith);
         }

@@ -33,8 +33,12 @@ export class MVBase implements IBaseDecoratorType {
         return this;
     }
 
-    with(fields: Array<string>): MVBase {
-        this.validateWith = fields;
+    with(fields: Array<string> | string, ...anotherFields: Array<string>): MVBase {
+        if (Array.isArray(fields)) {
+            this.validateWith = fields;
+        } else {
+            this.validateWith = [fields, ...anotherFields];
+        }
         return this;
     }
 

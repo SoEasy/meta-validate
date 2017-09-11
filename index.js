@@ -283,7 +283,9 @@ function makeDecorator(validationConfig) {
         var existValidateMetadata = Reflect.getMetadata(interfaces_1.VALIDATE_FIELDS_KEY, target);
         var errorKey = validationConfig.customErrorKey || propertyKey;
         existValidateMetadata.setupCustomErrorKey(propertyKey, errorKey);
-        existValidateMetadata.addValidators(propertyKey, validationConfig.validators);
+        if (!validationConfig.isTrigger) {
+            existValidateMetadata.addValidators(propertyKey, validationConfig.validators);
+        }
         if (validationConfig.validateWith) {
             existValidateMetadata.addValidateRelation(propertyKey, validationConfig.validateWith);
         }
