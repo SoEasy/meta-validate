@@ -1,14 +1,15 @@
 import { MetaValidate, ReceiveValidity, Validity, MVBase } from '../index';
-import {BehaviorSubject} from 'rxjs/BehaviorSubject';
+import { BehaviorSubject } from 'rxjs/BehaviorSubject';
 import 'reflect-metadata';
 
 class CustomValidators extends MVBase {
+    private fooValidator(value?: any, instance?: any): boolean {
+        console.log('foo validate', value, instance);
+        return false;
+    }
+
     foo(): CustomValidators {
-        this.lastValidator = 'foo';
-        this.prebuiltValidators['foo'] = (v: any): boolean => {
-            console.log('foo validation');
-            return !!v;
-        };
+        this.attachValidator('foo', this.fooValidator);
         return this;
     }
 }
@@ -39,7 +40,7 @@ class TestClass implements ReceiveValidity {
     //     this._phone = value;
     // }
 
-    @MetaValidate.Get<CustomValidators>(CustomValidators).foo().make()
+    @MetaValidate.Get<CustomValidators>(CustomValidators).foo().skipIf(() => true).make()
     n: string = '123312';
 }
 
