@@ -2,6 +2,7 @@ import { MetaValidate, ReceiveValidity, Validity, MVBase } from '../index';
 import { BehaviorSubject } from 'rxjs/BehaviorSubject';
 import 'reflect-metadata';
 
+@MetaValidate.Register
 class CustomValidators extends MVBase {
     private fooValidator(value?: any, instance?: any): boolean {
         console.log('foo validate', value, instance);
@@ -13,8 +14,6 @@ class CustomValidators extends MVBase {
         return this;
     }
 }
-
-MetaValidate.Register(CustomValidators);
 
 // class NestedClass implements ReceiveValidity {
 //     validity$: BehaviorSubject<Validity> = new BehaviorSubject<Validity>(null);

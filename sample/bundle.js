@@ -719,9 +719,11 @@ var CustomValidators = (function (_super) {
         this.attachValidator('foo', this.fooValidator);
         return this;
     };
+    CustomValidators = __decorate([
+        index_1.MetaValidate.Register
+    ], CustomValidators);
     return CustomValidators;
 }(index_1.MVBase));
-index_1.MetaValidate.Register(CustomValidators);
 // class NestedClass implements ReceiveValidity {
 //     validity$: BehaviorSubject<Validity> = new BehaviorSubject<Validity>(null);
 //

@@ -18,12 +18,12 @@ export class MVBase implements IBaseDecoratorType {
         this.attachedValidators[name] = validator;
     }
 
-    required(): IBaseDecoratorType {
+    required(): MVBase {
         this.attachValidator('required', (v: any): boolean => !v);
         return this;
     }
 
-    skipIf(condition: (i: any) => boolean): IBaseDecoratorType {
+    skipIf(condition: (i: any) => boolean): MVBase {
         if (!this.lastValidator) {
             console.warn('No last validator for "if" statement');
             return this;
@@ -32,12 +32,12 @@ export class MVBase implements IBaseDecoratorType {
         return this;
     }
 
-    skip(condition: (i: any) => boolean): IBaseDecoratorType {
+    skip(condition: (i: any) => boolean): MVBase {
         this.skipCondition = condition;
         return this;
     }
 
-    with(fields: Array<string> | string, ...anotherFields: Array<string>): IBaseDecoratorType {
+    with(fields: Array<string> | string, ...anotherFields: Array<string>): MVBase {
         if (Array.isArray(fields)) {
             this.validateWith = fields;
         } else {
@@ -46,7 +46,7 @@ export class MVBase implements IBaseDecoratorType {
         return this;
     }
 
-    custom(name: string, validator: (value: any, instance: any) => boolean): IBaseDecoratorType {
+    custom(name: string, validator: (value: any, instance: any) => boolean): MVBase {
         this.attachValidator(name, validator);
         return this;
     }
