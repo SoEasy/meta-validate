@@ -104,11 +104,11 @@ export class MVBase implements IBaseDecoratorType {
     isNested: boolean;
     constructor(customErrorKey?: string);
     attachValidator(name: string, validator: (v: any, i?: any) => boolean): void;
-    required(): IBaseDecoratorType;
-    skipIf(condition: (i: any) => boolean): IBaseDecoratorType;
-    skip(condition: (i: any) => boolean): IBaseDecoratorType;
-    with(fields: Array<string> | string, ...anotherFields: Array<string>): IBaseDecoratorType;
-    custom(name: string, validator: (value: any, instance: any) => boolean): IBaseDecoratorType;
+    required(): MVBase;
+    skipIf(condition: (i: any) => boolean): MVBase;
+    skip(condition: (i: any) => boolean): MVBase;
+    with(fields: Array<string> | string, ...anotherFields: Array<string>): MVBase;
+    custom(name: string, validator: (value: any, instance: any) => boolean): MVBase;
     readonly validators: Record<string, MVValidator>;
     make(): any;
 }

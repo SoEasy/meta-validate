@@ -2,6 +2,26 @@
 - модификатор `.with` теперь умеет принимать не только массив, но и набор строк
 - немного переделано внутреннее устройство регистрации валидаторов
 - возможность регистрировать свои классы с декораторами
+- валидация запускается вне текущего eventLoop, пока примитивно
+```
+@MetaValidate.Register
+class CustomValidators extends MVBase {
+    private fooValidator(value?: any, instance?: any): boolean {
+        return false;
+    }
+
+    foo(): CustomValidators {
+        this.attachValidator('foo', this.fooValidator);
+        return this;
+    }
+}
+
+class ValueObject {
+    ...
+    @MetaValidate.Get<CustomValidators>(CustomValidators).foo().make()
+    n: string;
+}
+```
 
 # 2.1.5
 - Указание кастомного имени для полей работает корректно во вложенных объектах и не вызывает ошибок
