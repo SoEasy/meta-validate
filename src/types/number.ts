@@ -19,8 +19,8 @@ export class MVNumber<T> extends MVBase implements IBaseDecoratorType {
         return this;
     }
 
-    with(fields: Array<string>): MVNumber<T> {
-        super.with(fields);
+    with(fields: Array<string> | string, ...anotherFields: Array<string>): MVNumber<T> {
+        super.with(fields, ...anotherFields);
         return this;
     }
 
@@ -29,56 +29,44 @@ export class MVNumber<T> extends MVBase implements IBaseDecoratorType {
         return this;
     }
 
-    convert(): MVNumber<T> {
-        this.converters.push((value: any) => {
-            try {
-                return parseFloat(value);
-            } catch (e) {
-                return undefined;
-            }
-        });
-        return this;
-    }
-
     min(arg: MVNumberArg<T>): MVNumber<T> {
-        this.lastValidator = 'min';
-        this.prebuiltValidators['min'] = (v: any, i: T): boolean => {
+        const validator = (v: any, i: T): boolean => {
             const compareValue = typeof arg === 'function' ? arg(i) : arg;
             return !v || parseFloat(v) < compareValue;
         };
+        this.attachValidator('min', validator);
         return this;
     }
 
     greater(arg: MVNumberArg<T>): MVNumber<T> {
-        this.lastValidator = 'greater';
-        this.prebuiltValidators['greater'] = (v: any, i: T): boolean => {
+        const validator = (v: any, i: T): boolean => {
             const compareValue = typeof arg === 'function' ? arg(i) : arg;
             return !v || parseFloat(v) <= compareValue;
         };
+        this.attachValidator('greater', validator);
         return this;
     }
 
     max(arg: MVNumberArg<T>): MVNumber<T> {
-        this.lastValidator = 'max';
-        this.prebuiltValidators['max'] = (v: any, i: T): boolean => {
+        const validator = (v: any, i: T): boolean => {
             const compareValue = typeof arg === 'function' ? arg(i) : arg;
             return !v || parseFloat(v) > compareValue;
         };
+        this.attachValidator('max', validator);
         return this;
     }
 
     less(arg: MVNumberArg<T>): MVNumber<T> {
-        this.lastValidator = 'less';
-        this.prebuiltValidators['less'] = (v: any, i: T): boolean => {
+        const validator = (v: any, i: T): boolean => {
             const compareValue = typeof arg === 'function' ? arg(i) : arg;
             return !v || parseFloat(v) >= compareValue;
         };
+        this.attachValidator('less', validator);
         return this;
     }
 
     integer(): MVNumber<T> {
-        this.lastValidator = 'integer';
-        this.prebuiltValidators['integer'] = (v): boolean => {
+        const validator = (v): boolean => {
             const isSafe = typeof v === 'number'
                 && v === v
                 && v !== Number.POSITIVE_INFINITY
@@ -87,27 +75,28 @@ export class MVNumber<T> extends MVBase implements IBaseDecoratorType {
                 && Math.abs(v) < Number.MAX_VALUE;
             return !v || !isSafe;
         };
+        this.attachValidator('integer', validator);
         return this;
     }
 
     negative(): MVNumber<T> {
-        this.lastValidator = 'negative';
-        this.prebuiltValidators['negative'] = (v: any): boolean => !v || parseFloat(v) >= 0;
+        const validator = (v: any): boolean => !v || parseFloat(v) >= 0;
+        this.attachValidator('negative', validator);
         return this;
     }
 
     positive(): MVNumber<T> {
-        this.lastValidator = 'positive';
-        this.prebuiltValidators['positive'] = (v: any): boolean => !v || parseFloat(v) <= 0;
+        const validator = (v: any): boolean => !v || parseFloat(v) <= 0;
+        this.attachValidator('positive', validator);
         return this;
     }
 
     divideBy(arg: MVNumberArg<T>): MVNumber<T> {
-        this.lastValidator = 'divideBy';
-        this.prebuiltValidators['divideBy'] = (v: any, i: T): boolean => {
+        const validator = (v: any, i: T): boolean => {
             const compareValue = typeof arg === 'function' ? arg(i) : arg;
             return !v || parseFloat(v) % compareValue !== 0;
         };
+        this.attachValidator('divideBy', validator);
         return this;
     }
 }

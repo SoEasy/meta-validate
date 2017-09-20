@@ -2,7 +2,7 @@ import { IBaseDecoratorType, MVValidator } from '../interfaces';
 import { makeDecorator } from '../make-decorator';
 
 export class MVBase implements IBaseDecoratorType {
-    protected prebuiltValidators: Record<string, MVValidator> = {};
+    protected attachedValidators: Record<string, MVValidator> = {};
     protected lastValidator: string = null;
     validateWith: Array<string> = [];
     skipCondition: (i: any) => boolean = null;
@@ -13,9 +13,13 @@ export class MVBase implements IBaseDecoratorType {
 
     constructor(public customErrorKey?: string) {}
 
+    attachValidator(name: string, validator: (v: any, i?: any) => boolean): void {
+        this.lastValidator = name;
+        this.attachedValidators[name] = validator;
+    }
+
     required(): MVBase {
-        this.lastValidator = 'required';
-        this.prebuiltValidators['required'] = (v: any): boolean => !v;
+        this.attachValidator('required', (v: any): boolean => !v);
         return this;
     }
 
@@ -33,19 +37,22 @@ export class MVBase implements IBaseDecoratorType {
         return this;
     }
 
-    with(fields: Array<string>): MVBase {
-        this.validateWith = fields;
+    with(fields: Array<string> | string, ...anotherFields: Array<string>): MVBase {
+        if (Array.isArray(fields)) {
+            this.validateWith = fields;
+        } else {
+            this.validateWith = [fields, ...anotherFields];
+        }
         return this;
     }
 
     custom(name: string, validator: (value: any, instance: any) => boolean): MVBase {
-        this.lastValidator = name;
-        this.prebuiltValidators[name] = validator;
+        this.attachValidator(name, validator);
         return this;
     }
 
     get validators(): Record<string, MVValidator> {
-        return this.prebuiltValidators;
+        return this.attachedValidators;
     }
 
     make(): any {

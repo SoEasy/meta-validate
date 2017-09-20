@@ -683,6 +683,16 @@ module.exports = __webpack_require__(10);
 
 "use strict";
 
+var __extends = (this && this.__extends) || (function () {
+    var extendStatics = Object.setPrototypeOf ||
+        ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+        function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+    return function (d, b) {
+        extendStatics(d, b);
+        function __() { this.constructor = d; }
+        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+    };
+})();
 var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
     var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
     if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
@@ -696,43 +706,51 @@ Object.defineProperty(exports, "__esModule", { value: true });
 var index_1 = __webpack_require__(11);
 var BehaviorSubject_1 = __webpack_require__(12);
 __webpack_require__(22);
-var NestedClass = (function () {
-    function NestedClass() {
-        this.validity$ = new BehaviorSubject_1.BehaviorSubject(null);
-        this.bar = '';
+var CustomValidators = (function (_super) {
+    __extends(CustomValidators, _super);
+    function CustomValidators() {
+        return _super !== null && _super.apply(this, arguments) || this;
     }
-    __decorate([
-        index_1.MetaValidate.String('baz').required().make(),
-        __metadata("design:type", String)
-    ], NestedClass.prototype, "bar", void 0);
-    return NestedClass;
-}());
+    CustomValidators.prototype.fooValidator = function (value, instance) {
+        console.log('foo validate', value, instance);
+        return false;
+    };
+    CustomValidators.prototype.foo = function () {
+        this.attachValidator('foo', this.fooValidator);
+        return this;
+    };
+    CustomValidators = __decorate([
+        index_1.MetaValidate.Register
+    ], CustomValidators);
+    return CustomValidators;
+}(index_1.MVBase));
+// class NestedClass implements ReceiveValidity {
+//     validity$: BehaviorSubject<Validity> = new BehaviorSubject<Validity>(null);
+//
+//     @MetaValidate.String('baz').required().make()
+//     bar: string = '';
+// }
 var TestClass = (function () {
     function TestClass() {
         this.validity$ = new BehaviorSubject_1.BehaviorSubject(null);
-        this._phone = '';
-        this.n = new NestedClass();
+        // @MetaValidate.String<TestClass>('phone')
+        // .required()
+        // .length(4)
+        // .make()
+        // _phone: string = '';
+        //
+        // get phone(): string {
+        //     return this._phone;
+        // }
+        //
+        // set phone(value: string) {
+        //     this._phone = value;
+        // }
+        this.n = '123312';
     }
-    Object.defineProperty(TestClass.prototype, "phone", {
-        get: function () {
-            return this._phone;
-        },
-        set: function (value) {
-            this._phone = value;
-        },
-        enumerable: true,
-        configurable: true
-    });
     __decorate([
-        index_1.MetaValidate.String('phone')
-            .required()
-            .length(4)
-            .make(),
+        index_1.MetaValidate.Get(CustomValidators).foo().skipIf(function () { return true; }).make(),
         __metadata("design:type", String)
-    ], TestClass.prototype, "_phone", void 0);
-    __decorate([
-        index_1.MetaValidate.Nested().make(),
-        __metadata("design:type", NestedClass)
     ], TestClass.prototype, "n", void 0);
     return TestClass;
 }());
@@ -740,6 +758,8 @@ var t1 = new TestClass();
 t1.validity$.subscribe(function (v) {
     console.log('validity t1', JSON.stringify(v), v && v.isFullValid());
 });
+t1.n = null;
+t1.n = 'hello';
 // t1.phone = '1';
 // t1.phone = null;
 // t1.phone = '12';
@@ -854,7 +874,7 @@ var make_decorator_1 = __webpack_require__(5);
 var MVBase = (function () {
     function MVBase(customErrorKey) {
         this.customErrorKey = customErrorKey;
-        this.prebuiltValidators = {};
+        this.attachedValidators = {};
         this.lastValidator = null;
         this.validateWith = [];
         this.skipCondition = null;
@@ -863,9 +883,12 @@ var MVBase = (function () {
         this.isTrigger = false;
         this.isNested = false;
     }
+    MVBase.prototype.attachValidator = function (name, validator) {
+        this.lastValidator = name;
+        this.attachedValidators[name] = validator;
+    };
     MVBase.prototype.required = function () {
-        this.lastValidator = 'required';
-        this.prebuiltValidators['required'] = function (v) { return !v; };
+        this.attachValidator('required', function (v) { return !v; });
         return this;
     };
     MVBase.prototype.skipIf = function (condition) {
@@ -881,17 +904,25 @@ var MVBase = (function () {
         return this;
     };
     MVBase.prototype.with = function (fields) {
-        this.validateWith = fields;
+        var anotherFields = [];
+        for (var _i = 1; _i < arguments.length; _i++) {
+            anotherFields[_i - 1] = arguments[_i];
+        }
+        if (Array.isArray(fields)) {
+            this.validateWith = fields;
+        }
+        else {
+            this.validateWith = [fields].concat(anotherFields);
+        }
         return this;
     };
     MVBase.prototype.custom = function (name, validator) {
-        this.lastValidator = name;
-        this.prebuiltValidators[name] = validator;
+        this.attachValidator(name, validator);
         return this;
     };
     Object.defineProperty(MVBase.prototype, "validators", {
         get: function () {
-            return this.prebuiltValidators;
+            return this.attachedValidators;
         },
         enumerable: true,
         configurable: true
@@ -965,7 +996,7 @@ exports.Validity = Validity;
 "use strict";
 
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.VALIDATE_FIELDS_KEY = 'JsonNameValidateFields';
+exports.VALIDATE_FIELDS_KEY = 'MetaValidateFields';
 
 
 /***/ }),
@@ -978,6 +1009,8 @@ Object.defineProperty(exports, "__esModule", { value: true });
 var number_1 = __webpack_require__(7);
 var string_1 = __webpack_require__(8);
 var base_1 = __webpack_require__(0);
+var base_2 = __webpack_require__(0);
+exports.MVBase = base_2.MVBase;
 var MetaValidate = (function () {
     function MetaValidate() {
     }
@@ -1000,6 +1033,17 @@ var MetaValidate = (function () {
     MetaValidate.Base = function (customName) {
         return new base_1.MVBase(customName);
     };
+    MetaValidate.Register = function (validatorsClass) {
+        MetaValidate.customValidatorsStore.set(validatorsClass, validatorsClass);
+    };
+    MetaValidate.Get = function (validatorClass) {
+        if (!MetaValidate.customValidatorsStore.has(validatorClass)) {
+            throw new Error("No validators registered for class " + validatorClass.name);
+        }
+        var validatorsConstructor = MetaValidate.customValidatorsStore.get(validatorClass);
+        return new validatorsConstructor();
+    };
+    MetaValidate.customValidatorsStore = new WeakMap();
     return MetaValidate;
 }());
 exports.MetaValidate = MetaValidate;
@@ -1016,6 +1060,7 @@ var validity_1 = __webpack_require__(1);
 exports.Validity = validity_1.Validity;
 var types_1 = __webpack_require__(3);
 exports.MetaValidate = types_1.MetaValidate;
+exports.MVBase = types_1.MVBase;
 
 
 /***/ }),
@@ -1036,7 +1081,9 @@ function makeDecorator(validationConfig) {
         var existValidateMetadata = Reflect.getMetadata(interfaces_1.VALIDATE_FIELDS_KEY, target);
         var errorKey = validationConfig.customErrorKey || propertyKey;
         existValidateMetadata.setupCustomErrorKey(propertyKey, errorKey);
-        existValidateMetadata.addValidators(propertyKey, validationConfig.validators);
+        if (!validationConfig.isTrigger) {
+            existValidateMetadata.addValidators(propertyKey, validationConfig.validators);
+        }
         if (validationConfig.validateWith) {
             existValidateMetadata.addValidateRelation(propertyKey, validationConfig.validateWith);
         }
@@ -1154,13 +1201,6 @@ var ValidateRelationStore = (function () {
         this.nestedFields = [];
         this.customErrorKeys = {};
         this.errorsStore = new WeakMap();
-        //
-        // private setFieldErrors(field: string, validity: MVFieldValidity): void {
-        //     this.errorsStore.errors[field] = validity;
-        // }
-        // getErrors(): Validity {
-        //     return this.errorsStore;
-        // }
     }
     ValidateRelationStore.prototype.getErrorKey = function (propertyKey) {
         return this.customErrorKeys[propertyKey] || propertyKey;
@@ -1310,59 +1350,51 @@ var MVNumber = (function (_super) {
         return this;
     };
     MVNumber.prototype.with = function (fields) {
-        _super.prototype.with.call(this, fields);
+        var anotherFields = [];
+        for (var _i = 1; _i < arguments.length; _i++) {
+            anotherFields[_i - 1] = arguments[_i];
+        }
+        _super.prototype.with.apply(this, [fields].concat(anotherFields));
         return this;
     };
     MVNumber.prototype.custom = function (name, validator) {
         _super.prototype.custom.call(this, name, validator);
         return this;
     };
-    MVNumber.prototype.convert = function () {
-        this.converters.push(function (value) {
-            try {
-                return parseFloat(value);
-            }
-            catch (e) {
-                return undefined;
-            }
-        });
-        return this;
-    };
     MVNumber.prototype.min = function (arg) {
-        this.lastValidator = 'min';
-        this.prebuiltValidators['min'] = function (v, i) {
+        var validator = function (v, i) {
             var compareValue = typeof arg === 'function' ? arg(i) : arg;
             return !v || parseFloat(v) < compareValue;
         };
+        this.attachValidator('min', validator);
         return this;
     };
     MVNumber.prototype.greater = function (arg) {
-        this.lastValidator = 'greater';
-        this.prebuiltValidators['greater'] = function (v, i) {
+        var validator = function (v, i) {
             var compareValue = typeof arg === 'function' ? arg(i) : arg;
             return !v || parseFloat(v) <= compareValue;
         };
+        this.attachValidator('greater', validator);
         return this;
     };
     MVNumber.prototype.max = function (arg) {
-        this.lastValidator = 'max';
-        this.prebuiltValidators['max'] = function (v, i) {
+        var validator = function (v, i) {
             var compareValue = typeof arg === 'function' ? arg(i) : arg;
             return !v || parseFloat(v) > compareValue;
         };
+        this.attachValidator('max', validator);
         return this;
     };
     MVNumber.prototype.less = function (arg) {
-        this.lastValidator = 'less';
-        this.prebuiltValidators['less'] = function (v, i) {
+        var validator = function (v, i) {
             var compareValue = typeof arg === 'function' ? arg(i) : arg;
             return !v || parseFloat(v) >= compareValue;
         };
+        this.attachValidator('less', validator);
         return this;
     };
     MVNumber.prototype.integer = function () {
-        this.lastValidator = 'integer';
-        this.prebuiltValidators['integer'] = function (v) {
+        var validator = function (v) {
             var isSafe = typeof v === 'number'
                 && v === v
                 && v !== Number.POSITIVE_INFINITY
@@ -1371,24 +1403,25 @@ var MVNumber = (function (_super) {
                 && Math.abs(v) < Number.MAX_VALUE;
             return !v || !isSafe;
         };
+        this.attachValidator('integer', validator);
         return this;
     };
     MVNumber.prototype.negative = function () {
-        this.lastValidator = 'negative';
-        this.prebuiltValidators['negative'] = function (v) { return !v || parseFloat(v) >= 0; };
+        var validator = function (v) { return !v || parseFloat(v) >= 0; };
+        this.attachValidator('negative', validator);
         return this;
     };
     MVNumber.prototype.positive = function () {
-        this.lastValidator = 'positive';
-        this.prebuiltValidators['positive'] = function (v) { return !v || parseFloat(v) <= 0; };
+        var validator = function (v) { return !v || parseFloat(v) <= 0; };
+        this.attachValidator('positive', validator);
         return this;
     };
     MVNumber.prototype.divideBy = function (arg) {
-        this.lastValidator = 'divideBy';
-        this.prebuiltValidators['divideBy'] = function (v, i) {
+        var validator = function (v, i) {
             var compareValue = typeof arg === 'function' ? arg(i) : arg;
             return !v || parseFloat(v) % compareValue !== 0;
         };
+        this.attachValidator('divideBy', validator);
         return this;
     };
     return MVNumber;
@@ -1432,7 +1465,11 @@ var MVString = (function (_super) {
         return this;
     };
     MVString.prototype.with = function (fields) {
-        _super.prototype.with.call(this, fields);
+        var anotherFields = [];
+        for (var _i = 1; _i < arguments.length; _i++) {
+            anotherFields[_i - 1] = arguments[_i];
+        }
+        _super.prototype.with.apply(this, [fields].concat(anotherFields));
         return this;
     };
     MVString.prototype.custom = function (name, validator) {
@@ -1446,32 +1483,31 @@ var MVString = (function (_super) {
         return this;
     };
     MVString.prototype.minLength = function (arg) {
-        this.lastValidator = 'minLength';
-        this.prebuiltValidators['minLength'] = function (v, i) {
+        var validator = function (v, i) {
             var compareValue = typeof arg === 'function' ? arg(i) : arg;
             return !v || v.length < compareValue;
         };
+        this.attachValidator('minLength', validator);
         return this;
     };
     MVString.prototype.maxLength = function (arg) {
-        this.lastValidator = 'maxLength';
-        this.prebuiltValidators['maxLength'] = function (v, i) {
+        var validator = function (v, i) {
             var compareValue = typeof arg === 'function' ? arg(i) : arg;
             return !!v && v.length > compareValue;
         };
+        this.attachValidator('maxLength', validator);
         return this;
     };
     MVString.prototype.length = function (arg) {
-        this.lastValidator = 'length';
-        this.prebuiltValidators['length'] = function (v, i) {
+        var validator = function (v, i) {
             var compareValue = typeof arg === 'function' ? arg(i) : arg;
             return !v || v.length !== compareValue;
         };
+        this.attachValidator('length', validator);
         return this;
     };
     MVString.prototype.regex = function (pattern, name) {
-        this.lastValidator = name;
-        this.prebuiltValidators[name] = function (v, i) {
+        var validator = function (v, i) {
             var compareValue = typeof pattern === 'function' ? pattern(i) : pattern;
             if (!compareValue) {
                 console.warn("RegExp validator '" + name + "' return null pattern");
@@ -1480,26 +1516,27 @@ var MVString = (function (_super) {
             compareValue = new RegExp(compareValue);
             return !v || !compareValue.test(v);
         };
+        this.attachValidator(name, validator);
         return this;
     };
     /**
      * @description Allow only a-z A-Z 0-9
      */
     MVString.prototype.alphanum = function () {
-        this.lastValidator = 'alphanum';
-        this.prebuiltValidators['alphanum'] = function (v) {
+        var validator = function (v) {
             return !v || /^[а-яА-Яa-zA-Z0-9]+$/.test(v);
         };
+        this.attachValidator('alphanum', validator);
         return this;
     };
     /**
      * @description Allow only a-z A-Z 0-9 - _
      */
     MVString.prototype.token = function () {
-        this.lastValidator = 'token';
-        this.prebuiltValidators['token'] = function (v) {
+        var validator = function (v) {
             return !v || /^[a-zA-Z0-9_\-]+$/.test(v);
         };
+        this.attachValidator('token', validator);
         return this;
     };
     return MVString;

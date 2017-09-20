@@ -14,7 +14,10 @@ export function makeDecorator<T>(
         const errorKey = validationConfig.customErrorKey || propertyKey;
         existValidateMetadata.setupCustomErrorKey(propertyKey, errorKey);
 
-        existValidateMetadata.addValidators(propertyKey, validationConfig.validators);
+        if (!validationConfig.isTrigger) {
+            existValidateMetadata.addValidators(propertyKey, validationConfig.validators);
+        }
+
         if (validationConfig.validateWith) {
             existValidateMetadata.addValidateRelation(propertyKey, validationConfig.validateWith);
         }
@@ -53,7 +56,7 @@ export function makeDecorator<T>(
                 errorsStore.set(this, new Validity());
             }
 
-            if (newVal !== currentVal) {
+            if (newVal !== currentVal) setTimeout( () => {
                 // Валидация самого поля
                 // Если не триггер - валидируем
                 if (!validationConfig.isTrigger) {
@@ -82,7 +85,7 @@ export function makeDecorator<T>(
                 }
 
                 this.validity$.next(errorsStore.get(this));
-            }
+            }, 0);
         };
         Object.defineProperty(target, propertyKey, descriptor);
         return descriptor;

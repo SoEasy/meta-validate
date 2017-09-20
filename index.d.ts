@@ -4,10 +4,10 @@
 
 import { Subject } from 'rxjs';
 
-export const VALIDATE_FIELDS_KEY = "JsonNameValidateFields";
+export const VALIDATE_FIELDS_KEY = "MetaValidateFields";
 export interface IBaseDecoratorType {
         required: () => IBaseDecoratorType;
-        with: (fields: Array<string>) => IBaseDecoratorType;
+        with: (fields: Array<string> | string, ...anotherFields: Array<string>) => IBaseDecoratorType;
         skipIf: (condition: (instance: any) => boolean) => IBaseDecoratorType;
         skip: (condition: (instance: any) => boolean) => IBaseDecoratorType;
         validators: Record<string, MVValidator>;
@@ -49,6 +49,8 @@ export class MetaValidate {
     static Trigger(): MVBase;
     static Nested(customName?: string): MVBase;
     static Base(customName?: string): MVBase;
+    static Register<T extends MVBase>(validatorsClass: new () => T): void;
+    static Get<T extends MVBase>(validatorClass: new () => T): T;
 }
 
 export type MVNumberArg<T> = number | ((instance: T) => number);
@@ -56,9 +58,8 @@ export class MVNumber<T> extends MVBase implements IBaseDecoratorType {
     required(): MVNumber<T>;
     skipIf(condition: (i: any) => boolean): MVNumber<T>;
     skip(condition: (i: T) => boolean): MVNumber<T>;
-    with(fields: Array<string>): MVNumber<T>;
+    with(fields: Array<string> | string, ...anotherFields: Array<string>): MVNumber<T>;
     custom(name: string, validator: (value: number, instance: any) => boolean): MVNumber<T>;
-    convert(): MVNumber<T>;
     min(arg: MVNumberArg<T>): MVNumber<T>;
     greater(arg: MVNumberArg<T>): MVNumber<T>;
     max(arg: MVNumberArg<T>): MVNumber<T>;
@@ -74,7 +75,7 @@ export class MVString<T> extends MVBase implements IBaseDecoratorType {
         required(): MVString<T>;
         skipIf(condition: (i: any) => boolean): MVString<T>;
         skip(condition: (i: T) => boolean): MVString<T>;
-        with(fields: Array<string>): MVString<T>;
+        with(fields: Array<string> | string, ...anotherFields: Array<string>): MVString<T>;
         custom(name: string, validator: (value: string, instance: any) => boolean): MVString<T>;
         convert(): MVString<T>;
         minLength(arg: MVStringArg<number, T>): MVString<T>;
@@ -93,7 +94,7 @@ export class MVString<T> extends MVBase implements IBaseDecoratorType {
 
 export class MVBase implements IBaseDecoratorType {
     customErrorKey: string;
-    protected prebuiltValidators: Record<string, MVValidator>;
+    protected attachedValidators: Record<string, MVValidator>;
     protected lastValidator: string;
     validateWith: Array<string>;
     skipCondition: (i: any) => boolean;
@@ -102,10 +103,11 @@ export class MVBase implements IBaseDecoratorType {
     isTrigger: boolean;
     isNested: boolean;
     constructor(customErrorKey?: string);
+    attachValidator(name: string, validator: (v: any, i?: any) => boolean): void;
     required(): MVBase;
     skipIf(condition: (i: any) => boolean): MVBase;
     skip(condition: (i: any) => boolean): MVBase;
-    with(fields: Array<string>): MVBase;
+    with(fields: Array<string> | string, ...anotherFields: Array<string>): MVBase;
     custom(name: string, validator: (value: any, instance: any) => boolean): MVBase;
     readonly validators: Record<string, MVValidator>;
     make(): any;

@@ -152,12 +152,4 @@ export class ValidateRelationStore {
     private getValidators(field: string): Record<string, MVValidator> {
         return this.validatorsStore[field] || {};
     }
-    //
-    // private setFieldErrors(field: string, validity: MVFieldValidity): void {
-    //     this.errorsStore.errors[field] = validity;
-    // }
-
-    // getErrors(): Validity {
-    //     return this.errorsStore;
-    // }
 }
