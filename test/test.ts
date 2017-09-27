@@ -1,17 +1,17 @@
 import { expect } from 'chai';
 import { MetaValidate, Validity } from './../src/index';
-import { Subject } from 'rxjs';
+import { BehaviorSubject } from 'rxjs';
 import 'reflect-metadata';
 
 class ValidateCustom {
-    validity$: Subject<Validity> = new Subject<Validity>();
+    validity$: BehaviorSubject<Validity> = new BehaviorSubject<Validity>(new Validity());
 
     @MetaValidate.Base().custom('foo', () => true).make()
     field: string;
 }
 
 class SkipValidation {
-    validity$: Subject<Validity> = new Subject<Validity>();
+    validity$: BehaviorSubject<Validity> = new BehaviorSubject<Validity>(new Validity());
 
     @MetaValidate.Base()
     .skip((instance): boolean => instance.skip)
@@ -22,7 +22,7 @@ class SkipValidation {
 }
 
 class SkipSingleValidator {
-    validity$: Subject<Validity> = new Subject<Validity>();
+    validity$: BehaviorSubject<Validity> = new BehaviorSubject<Validity>(new Validity());
 
     @MetaValidate.Base()
     .required()
@@ -34,7 +34,7 @@ class SkipSingleValidator {
 }
 
 class WithValidator {
-    validity$: Subject<Validity> = new Subject<Validity>();
+    validity$: BehaviorSubject<Validity> = new BehaviorSubject<Validity>(new Validity());
 
     @MetaValidate.Base()
     .with(['trigger'])
@@ -46,132 +46,116 @@ class WithValidator {
     trigger: number = 5;
 }
 
-class NestedValidator {
-    validity$: Subject<Validity> = new Subject<Validity>();
-
-    @MetaValidate.Nested().make()
-    nestedField: WithValidator = new WithValidator();
-}
-
-class CustomNestedValidator {
-    validity$: Subject<Validity> = new Subject<Validity>();
-
-    @MetaValidate.Nested('F').make()
-    nestedField: WithValidator = new WithValidator();
-}
-
 describe('Base validation', () => {
-    it('must validate custom', () => {
+    it('must validate custom', done => {
         const i = new ValidateCustom();
+        i.field = 'a';
+        setTimeout(() => {
         i.validity$.subscribe(
             v => {
-                expect(v.errors).to.be.deep.equal({ field: { foo: true } });
+                expect(v.errors).to.be.eql({ field: { foo: true } });
+                done();
             }
         );
-        i.field = 'a';
+        });
     });
 
-    it('must skip all', () => {
+    it('must skip all', done => {
         const i = new SkipValidation();
-        i.validity$.subscribe(
-            v => {
-                expect(v.errors).to.be.deep.equal({ field: { foo: false } });
-            }
-        );
         i.field = 'a';
         i.field = null;
+        setTimeout(() => {
+            i.validity$.subscribe(
+                v => {
+                    expect(v.errors).to.be.eql({ field: { foo: false } });
+                    done();
+                }
+            );
+        });
     });
 
-    it('dont skip all', () => {
+    it('dont skip all', done => {
         const i = new SkipValidation();
-        i.validity$.subscribe(
-            v => {
-                expect(v.errors).to.be.deep.equal({ field: { foo: true } });
-            }
-        );
         i.skip = false;
         i.field = 'a';
         i.field = null;
-    });
-
-    it('must skip validator', () => {
-        const i = new SkipSingleValidator();
+        setTimeout(() => {
         i.validity$.subscribe(
             v => {
-                expect(v.errors).to.be.deep.equal({ field: { required: false, foo: true } });
+                expect(v.errors).to.be.eql({ field: { foo: true } });
+                done();
             }
         );
+        });
+    });
+
+    it('must skip validator', done => {
+        const i = new SkipSingleValidator();
         i.field = null;
         i.field = 'hello';
         i.field = null;
+        setTimeout(() => {
+        i.validity$.subscribe(
+            v => {
+                expect(v.errors).to.be.deep.equal({ field: { required: false, foo: true } });
+                done();
+            }
+        );
+        });
     });
 
-    it('dont skip validator', () => {
+    it('dont skip validator', done => {
         const i = new SkipSingleValidator();
+        i.skip = false;
+        i.field = null;
+        setTimeout(() => {
         i.validity$.subscribe(
             v => {
                 expect(v.errors).to.be.deep.equal({ field: { required: true, foo: true } });
+                done();
             }
         );
-        i.skip = false;
-        i.field = null;
+        });
     });
 
-    it('validate required', () => {
+    it('validate required', done => {
         const i = new SkipSingleValidator();
+        i.skip = false;
+        i.field = 'hello';
+        setTimeout(() => {
         i.validity$.subscribe(
             v => {
                 expect(v.errors).to.be.deep.equal({ field: { required: false, foo: true } });
+                done();
             }
         );
-        i.skip = false;
-        i.field = 'hello';
+        });
     });
 
-    it('must validate after trigger', () => {
+    it('must validate after trigger', done => {
         const i = new WithValidator();
+        i.trigger = 6;
+        setTimeout(() => {
         i.validity$.subscribe(
             v => {
                 expect(v.errors).to.be.deep.equal({ field: { required: false, len: true } });
+                done();
             }
         );
-        i.trigger = 6;
+        });
     });
 
-    it('dont validate when no change', () => {
+    it('dont validate when no change', done => {
         const i = new WithValidator();
+        i.trigger = 5;
+        i.field = 'hello';
+        setTimeout(() => {
         i.validity$.subscribe(
             v => {
                 expect(v.errors).to.be.deep.equal({ field: { required: false, len: false } });
+                done();
             }
         );
-        i.trigger = 5;
-        i.field = 'hello';
-    });
-
-    it('must validate nested field', () => {
-        const i = new NestedValidator();
-        i.validity$.subscribe(
-            v => {
-                expect(v.errors).to.be.deep.equal({
-                    nestedField: {
-                        field: { required: false, len: true }
-                    } });
-            }
-        );
-        i.nestedField.trigger = 6;
-    });
-
-    it('must validate nested field with custom name', () => {
-        const i = new CustomNestedValidator();
-        i.validity$.subscribe(
-            v => {
-                expect(v.errors).to.be.deep.equal({
-                    F: {
-                        field: { required: false, len: true }
-                    } });
-            }
-        );
-        i.nestedField.trigger = 6;
+        });
     });
 });
