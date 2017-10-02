@@ -56,7 +56,7 @@ export function makeDecorator<T>(
                 errorsStore.set(this, new Validity());
             }
 
-            if (newVal !== currentVal) setTimeout( () => {
+            if (newVal !== currentVal) {
                 // Валидация самого поля
                 // Если не триггер - валидируем
                 if (!validationConfig.isTrigger) {
@@ -85,7 +85,7 @@ export function makeDecorator<T>(
                 }
 
                 this.validity$.next(errorsStore.get(this));
-            }, 0);
+            }
         };
         Object.defineProperty(target, propertyKey, descriptor);
         return descriptor;
