@@ -1113,32 +1113,35 @@ function makeDecorator(validationConfig) {
             if (!errorsStore.has(this)) {
                 errorsStore.set(this, new validity_1.Validity());
             }
-            if (newVal !== currentVal) {
-                // Валидация самого поля
-                // Если не триггер - валидируем
-                if (!validationConfig.isTrigger) {
-                    var fieldErrors = validateKeyMetadata.validateField(propertyKey, newVal, this);
-                    setErrors(errorsStore, this, errorKey, fieldErrors);
-                }
-                // Валидация связанных полей
-                var relatedErrors = validateKeyMetadata.validateRelatedFields(propertyKey, this);
-                Object.assign(errorsStore.get(this).errors, relatedErrors);
-                if (validationConfig.isNested) {
-                    if (newVal && newVal.validity$) {
-                        newVal.validity$.subscribe(function (nestedValidity) {
-                            if (!validateKeyMetadata.toSkipFieldValidation(propertyKey, _this)) {
-                                setErrors(errorsStore, _this, errorKey, nestedValidity.errors);
-                            }
-                            _this.validity$.next(errorsStore.get(_this));
-                        });
+            if (newVal !== currentVal)
+                setTimeout(function () {
+                    // if (newVal !== currentVal) {
+                    // Валидация самого поля
+                    // Если не триггер - валидируем
+                    if (!validationConfig.isTrigger) {
+                        var fieldErrors = validateKeyMetadata.validateField(propertyKey, newVal, _this);
+                        setErrors(errorsStore, _this, errorKey, fieldErrors);
                     }
-                    else {
-                        var errors = validateKeyMetadata.validateField(propertyKey, newVal, this);
-                        errorsStore.get(this).errors[errorKey] = errors;
+                    // Валидация связанных полей
+                    var relatedErrors = validateKeyMetadata.validateRelatedFields(propertyKey, _this);
+                    Object.assign(errorsStore.get(_this).errors, relatedErrors);
+                    if (validationConfig.isNested) {
+                        if (newVal && newVal.validity$) {
+                            newVal.validity$.subscribe(function (nestedValidity) {
+                                if (!validateKeyMetadata.toSkipFieldValidation(propertyKey, _this)) {
+                                    setErrors(errorsStore, _this, errorKey, nestedValidity.errors);
+                                }
+                                _this.validity$.next(errorsStore.get(_this));
+                            });
+                        }
+                        else {
+                            var errors = validateKeyMetadata.validateField(propertyKey, newVal, _this);
+                            errorsStore.get(_this).errors[errorKey] = errors;
+                        }
                     }
-                }
-                this.validity$.next(errorsStore.get(this));
-            }
+                    _this.validity$.next(errorsStore.get(_this));
+                    // }
+                }, 0);
         };
         Object.defineProperty(target, propertyKey, descriptor);
         return descriptor;
