@@ -330,8 +330,11 @@ function makeDecorator(validationConfig) {
                 // Валидация самого поля
                 // Если не триггер - валидируем
                 if (!validationConfig.isTrigger) {
-                    var fieldErrors = validateKeyMetadata.validateField(propertyKey, newVal, this);
-                    setErrors(errorsStore, this, errorKey, fieldErrors);
+                    var skipNested = validateKeyMetadata.toSkipFieldValidation(propertyKey, this) && validationConfig.isNested;
+                    var fieldErrors = skipNested
+                        ? {}
+                        : validateKeyMetadata.validateField(propertyKey, newVal, this);
+                    setErrors(errorsStore, this, errorKey, fieldErrors, true);
                 }
                 // Валидация связанных полей
                 var relatedErrors = validateKeyMetadata.validateRelatedFields(propertyKey, this);
@@ -346,6 +349,9 @@ function makeDecorator(validationConfig) {
                         newVal.validity$.subscribe(function (nestedValidity) {
                             if (!validateKeyMetadata.toSkipFieldValidation(propertyKey, _this)) {
                                 setErrors(errorsStore, _this, errorKey, nestedValidity.errors);
+                            }
+                            else {
+                                setErrors(errorsStore, _this, errorKey, {}, true);
                             }
                             _this.validity$.next(errorsStore.get(_this));
                         });
@@ -363,9 +369,10 @@ function makeDecorator(validationConfig) {
     };
 }
 exports.makeDecorator = makeDecorator;
-function setErrors(wm, instance, key, errors) {
+function setErrors(wm, instance, key, errors, force) {
+    if (force === void 0) { force = false; }
     var errorsStore = wm.get(instance).errors;
-    if (!errorsStore[key]) {
+    if (!errorsStore[key] || force) {
         errorsStore[key] = errors;
     }
     else {

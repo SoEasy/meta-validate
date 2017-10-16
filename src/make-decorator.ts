@@ -60,8 +60,11 @@ export function makeDecorator<T>(
                 // Валидация самого поля
                 // Если не триггер - валидируем
                 if (!validationConfig.isTrigger) {
-                    const fieldErrors = validateKeyMetadata.validateField(propertyKey, newVal, this);
-                    setErrors(errorsStore, this, errorKey, fieldErrors);
+                    const skipNested = validateKeyMetadata.toSkipFieldValidation(propertyKey, this) && validationConfig.isNested;
+                    const fieldErrors = skipNested
+                        ? {}
+                        : validateKeyMetadata.validateField(propertyKey, newVal, this);
+                    setErrors(errorsStore, this, errorKey, fieldErrors, true);
                 }
 
                 // Валидация связанных полей
@@ -79,6 +82,8 @@ export function makeDecorator<T>(
                             nestedValidity => {
                                 if (!validateKeyMetadata.toSkipFieldValidation(propertyKey, this)) {
                                     setErrors(errorsStore, this, errorKey, nestedValidity.errors);
+                                } else {
+                                    setErrors(errorsStore, this, errorKey, {}, true);
                                 }
                                 this.validity$.next(errorsStore.get(this));
                             }
@@ -97,9 +102,9 @@ export function makeDecorator<T>(
     };
 }
 
-function setErrors(wm: WeakMap<any, Validity>, instance: any, key: string, errors: any): void {
+function setErrors(wm: WeakMap<any, Validity>, instance: any, key: string, errors: any, force: boolean = false): void {
     const errorsStore = wm.get(instance).errors;
-    if (!errorsStore[key]) {
+    if (!errorsStore[key] || force) {
         errorsStore[key] = errors;
     } else {
         Object.assign(errorsStore[key], errors);
