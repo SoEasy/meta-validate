@@ -66,6 +66,11 @@ export function makeDecorator<T>(
 
                 // Валидация связанных полей
                 const relatedErrors = validateKeyMetadata.validateRelatedFields(propertyKey, this);
+                for (const relatedErrorKey in relatedErrors) {
+                    if (validateKeyMetadata.toSkipFieldValidation(relatedErrorKey, this)) {
+                        relatedErrors[relatedErrorKey] = {};
+                    }
+                }
                 Object.assign(errorsStore.get(this).errors, relatedErrors);
 
                 if (validationConfig.isNested) {

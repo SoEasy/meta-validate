@@ -335,6 +335,11 @@ function makeDecorator(validationConfig) {
                 }
                 // Валидация связанных полей
                 var relatedErrors = validateKeyMetadata.validateRelatedFields(propertyKey, this);
+                for (var relatedErrorKey in relatedErrors) {
+                    if (validateKeyMetadata.toSkipFieldValidation(relatedErrorKey, this)) {
+                        relatedErrors[relatedErrorKey] = {};
+                    }
+                }
                 Object.assign(errorsStore.get(this).errors, relatedErrors);
                 if (validationConfig.isNested) {
                     if (newVal && newVal.validity$) {
