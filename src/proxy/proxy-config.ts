@@ -53,4 +53,8 @@ export class ProxyConfig {
     isFieldNested(field: string): boolean {
         return this.fieldConfigs[field].isNested;
     }
+
+    getFieldConfig(field: string): ProxyFieldConfig {
+        return this.fieldConfigs[field];
+    }
 }

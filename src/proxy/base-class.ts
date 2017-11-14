@@ -4,6 +4,11 @@ import { ProxyConfig } from './proxy-config';
 export class MetaValidateProxy<T> {
     private dest: T;
     private proxyConfig: ProxyConfig;
+    private childProxies: Array<string> = [];
+    private nestedName: string = null;
+
+    // TODO interface for metavalidateproxy
+    $parent: any;
 
     constructor() {
         this.proxyConfig = (Reflect as any).getMetadata('mvProxy', this);
@@ -19,6 +24,9 @@ export class MetaValidateProxy<T> {
             if (this.proxyConfig.isFieldNested(field)) {
                 // TODO подумать, как быть, когда nested-поле не инициализировано в источнике
                 this[field].attachDataSource(data[field]);
+                this[field].$parent = this;
+                this[field].rememberNestedName(field);
+                this.childProxies.push(field);
             } else {
                 this[field] = data[field];
             }
@@ -62,9 +70,37 @@ export class MetaValidateProxy<T> {
         return {};
     }
 
+    /**
+     * На самом деле служебный метод, который дергают сеттеры чтобы прокинуть данные в источник
+     */
     passDataToDest(fieldName: string, value: any): void {
         if (!this.proxyConfig.isFieldNested(fieldName)) {
             this.dest[fieldName] = value;
+        }
+    }
+
+    /**
+     * Запомнить имя вложенного поля для составления цепочек зависимостей
+     */
+    rememberNestedName(nestedName: string): void {
+        this.nestedName = nestedName;
+    }
+
+    onChangeChildField(field: string): void {
+        if (!this.$parent) {
+            console.log('bubbling complete:', field);
+            return;
+        }
+        this.$parent.onChangeChildField(`${this.nestedName}.${field}`);
+    }
+
+    onChangeParentField(field: string): void {
+        if (!this.childProxies.length) {
+            console.log('broadcasting complete', field);
+            return;
+        }
+        for (const childProxyName of this.childProxies) {
+            this[childProxyName].onChangeParentField(`$parent.${field}`);
         }
     }
 }

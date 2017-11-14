@@ -1,5 +1,10 @@
-import { ProxyFieldConfig } from 'proxy/proxy-field-config';
+// import { ProxyFieldConfig } from './proxy-field-config';
+// import { ProxyConfig } from './proxy-config';
 
-export function validate(field: string, fieldConfig: ProxyFieldConfig, instance: any): void {
-    console.log('call validate', field, fieldConfig, instance);
+export function validate(
+    // field: string,
+    // proxyConfig: ProxyConfig,
+    // instance: any
+): void {
+    // const fieldConfig: ProxyFieldConfig = proxyConfig.getFieldConfig(field);
 }

@@ -1,5 +1,6 @@
 import { ProxyFieldConfig } from './proxy-field-config';
 import { ProxyConfig } from './proxy-config';
+// import { validate } from './validation-service';
 
 export function makeDecorator(config: ProxyFieldConfig): any {
     return (target: any, propertyKey: string): PropertyDescriptor => {
@@ -31,6 +32,9 @@ export function makeDecorator(config: ProxyFieldConfig): any {
 
             if (newVal !== currentVal) {
                 this.passDataToDest(propertyKey, newVal);
+                this.onChangeChildField(propertyKey);
+                this.onChangeParentField(propertyKey);
+                // validate(propertyKey, proxyConfig, this);
             }
         };
         Object.defineProperty(target, propertyKey, descriptor);

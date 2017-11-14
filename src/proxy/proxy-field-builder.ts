@@ -33,8 +33,8 @@ export class ProxyFieldBuilder {
     /**
      * Прокси больше не будет самостоятельно валидировать данное поле. Только при with или прямому вызову validateField
      */
-    validateOnEvent(): ProxyFieldBuilder {
-        this.fieldConfig.validateOnEvent = true;
+    manual(): ProxyFieldBuilder {
+        this.fieldConfig.manual = true;
         return this;
     }
 

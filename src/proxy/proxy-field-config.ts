@@ -21,7 +21,7 @@ export class ProxyFieldConfig {
      * или по with
      * Игнорирует debounce
      */
-    validateOnEvent: boolean;
+    manual: boolean;
 
     /**
      * Поля, при изменении которых надо провалидировать данное

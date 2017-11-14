@@ -84,4 +84,29 @@ describe('Base proxy and data-source interaction', () => {
             expect(data.address.city).to.eql(proxy.address.city);
         });
     });
+
+    describe('Proxy must know about nesting', () => {
+        it('must correctly relate to parent field', () => {
+            const data = new Data();
+            const proxy = new DataProxy();
+            proxy.attachDataSource(data);
+            expect(proxy.address.$parent.foo).to.eql(proxy.foo);
+            expect(proxy.address.$parent).to.eql(proxy);
+        });
+
+        it('proxy must know about them name', () => {
+            const data = new Data();
+            const proxy = new DataProxy();
+            proxy.attachDataSource(data);
+            expect((proxy.address as any).nestedName).to.eql('address');
+        });
+
+        it('must bubble change from child to parent', () => {
+            const data = new Data();
+            const proxy = new DataProxy();
+            proxy.attachDataSource(data);
+            proxy.address.city = 'Ekb';
+            proxy.foo = 'bar';
+        });
+    });
 });
