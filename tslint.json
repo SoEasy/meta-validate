@@ -23,6 +23,7 @@
       "spaces"
     ],
     "label-position": true,
+    "max-classes-per-file": [true, 5],
     "max-line-length": [true, 140],
     "member-access": false,
     "member-ordering": [

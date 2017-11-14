@@ -1,17 +1,28 @@
-import { ProxyValidationResult } from 'proxy/interfaces';
+import { ProxyValidationResult } from './interfaces';
+import { ProxyConfig } from './proxy-config';
 
 export class MetaValidateProxy<T> {
     private dest: T;
+    private proxyConfig: ProxyConfig;
 
     constructor() {
-        console.log('costructor', this);
+        this.proxyConfig = (Reflect as any).getMetadata('mvProxy', this);
     }
+
     /**
      * Присоединить источник/назначение данных
      * При присоединении прокси скопирует в себя все значимые для него поля
      */
     attachDataSource(data: T): void {
         this.dest = data;
+        for (const field of this.proxyConfig.significantFields) {
+            if (this.proxyConfig.isFieldNested(field)) {
+                // TODO подумать, как быть, когда nested-поле не инициализировано в источнике
+                this[field].attachDataSource(data[field]);
+            } else {
+                this[field] = data[field];
+            }
+        }
     }
 
     /**
@@ -52,6 +63,8 @@ export class MetaValidateProxy<T> {
     }
 
     passDataToDest(fieldName: string, value: any): void {
-        this.dest[fieldName] = value;
+        if (!this.proxyConfig.isFieldNested(fieldName)) {
+            this.dest[fieldName] = value;
+        }
     }
 }

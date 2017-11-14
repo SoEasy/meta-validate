@@ -1,54 +1,87 @@
 import { expect } from 'chai';
-import { MetaValidateProxy } from './../../src/proxy/base-class';
+import { MetaValidateProxy, ProxyField } from './../../src/proxy';
+import 'reflect-metadata';
 
 class Data {
-    foo: string;
+    foo: string = 'goodbye';
+    bar: string = 'goodbye';
+
+    address: Address = new Address();
 }
 
-function propDecorator(target: any, propertyKey: string): any {
-    const descriptor = Object.getOwnPropertyDescriptor(target, propertyKey) || {
-        configurable: true,
-        enumerable: true
-    };
+class Address {
+    city: string = 'Moscow';
+}
 
-    const valueStore = new WeakMap<any, any>();
-
-    const originalGet = descriptor.get || function(): any {
-        return valueStore.get(this as any);
-    };
-    const originalSet = descriptor.set || function(val: any): void {
-        valueStore.set(this, val);
-    };
-
-    descriptor.get = originalGet;
-    descriptor.set = function(newVal: any): void {
-        const currentVal = originalGet.call(this);
-        originalSet.call(this, newVal);
-
-        if (newVal !== currentVal) {
-            console.log('change val', this);
-            this.passDataToDest(propertyKey, newVal);
-        }
-    };
-    Object.defineProperty(target, propertyKey, descriptor);
-    return descriptor;
+class AddressProxy extends MetaValidateProxy<Address> {
+    @ProxyField.Validation.make()
+    city: string;
 }
 
 class DataProxy extends MetaValidateProxy<Data> {
-    @propDecorator
+    @ProxyField.Validation.make()
     foo: string;
+
+    @ProxyField.Trigger
+    bar: string;
+
+    @ProxyField.Nested
+    address: AddressProxy = new AddressProxy();
 }
 
 describe('Base proxy and data-source interaction', () => {
-    it('must load data from proxy', () => {
-        /**/
+    describe('Simple decorators interaction', () => {
+        it('must load data from proxy validation field', () => {
+            const data = new Data();
+            const proxy = new DataProxy();
+            proxy.attachDataSource(data);
+            expect(proxy.foo).to.eql('goodbye');
+            expect(proxy.foo).to.eql(data.foo);
+        });
+
+        it('must load data from proxy trigger field', () => {
+            const data = new Data();
+            const proxy = new DataProxy();
+            proxy.attachDataSource(data);
+            expect(proxy.bar).to.eql('goodbye');
+            expect(proxy.bar).to.eql(data.bar);
+        });
+
+        it('must pass data from proxy to dest', () => {
+            const data = new Data();
+            const proxy = new DataProxy();
+            proxy.attachDataSource(data);
+            proxy.foo = 'hello';
+            expect(data.foo).to.eql('hello');
+            expect(data.foo).to.eql(proxy.foo);
+        });
+
+        it('must pass data from proxy trigger to dest', () => {
+            const data = new Data();
+            const proxy = new DataProxy();
+            proxy.attachDataSource(data);
+            proxy.bar = 'hello';
+            expect(data.bar).to.eql('hello');
+            expect(data.bar).to.eql(proxy.bar);
+        });
     });
 
-    it('must pass data from proxy to dest', () => {
-        const data = new Data();
-        const m = new DataProxy();
-        m.attachDataSource(data);
-        m.foo = 'hello';
-        expect(data.foo).to.eql('hello');
+    describe('Nested decorator interaction', () => {
+        it('must correctly load initial data to nested proxy', () => {
+            const data = new Data();
+            const proxy = new DataProxy();
+            proxy.attachDataSource(data);
+            expect(proxy.address.city).to.eql('Moscow');
+            expect(proxy.address.city).to.eql(data.address.city);
+        });
+
+        it('must correctly pass data from proxy to nested field', () => {
+            const data = new Data();
+            const proxy = new DataProxy();
+            proxy.attachDataSource(data);
+            proxy.address.city = 'Ekb';
+            expect(data.address.city).to.eql('Ekb');
+            expect(data.address.city).to.eql(proxy.address.city);
+        });
     });
 });

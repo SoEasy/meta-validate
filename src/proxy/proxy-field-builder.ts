@@ -1,5 +1,6 @@
-import { ProxyFieldConfig } from 'proxy/proxy-field-config';
-import { ProxyValidator } from 'proxy/interfaces';
+import { ProxyFieldConfig } from './proxy-field-config';
+import { ProxyValidator } from './interfaces';
+import { makeDecorator } from './make-decorator';
 
 export class ProxyFieldBuilder {
     private fieldConfig: ProxyFieldConfig = new ProxyFieldConfig();
@@ -7,7 +8,6 @@ export class ProxyFieldBuilder {
 
     /**
      * Принимает и устанавливает имя поля, к которому биндится поле прокси
-     * TODO возможно это не нужно - пусть будет полное соответствие?
      */
     setupDestName(name: string): ProxyFieldBuilder {
         this.fieldConfig.destName = name;
@@ -92,5 +92,33 @@ export class ProxyFieldBuilder {
         this.fieldConfig.skipValidatorConditions[this.lastValidator] = condition;
         this.lastValidator = null;
         return this;
+    }
+
+    nested(): ProxyFieldBuilder {
+        this.fieldConfig.isNested = true;
+        return this;
+    }
+
+    trigger(): ProxyFieldBuilder {
+        this.fieldConfig.isTrigger = true;
+        return this;
+    }
+
+    make(): any {
+        return makeDecorator(this.fieldConfig);
+    }
+}
+
+export class ProxyField {
+    static get Validation(): ProxyFieldBuilder {
+        return new ProxyFieldBuilder();
+    }
+
+    static get Nested(): any {
+        return new ProxyFieldBuilder().nested().make();
+    }
+
+    static get Trigger(): any {
+        return new ProxyFieldBuilder().trigger().make();
     }
 }
