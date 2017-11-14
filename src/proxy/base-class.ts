@@ -58,16 +58,30 @@ export class MetaValidateProxy<T> {
      * Вызвать полную валидацию объекта
      */
     validate(): ProxyValidationResult {
-        console.log('full validate');
-        return {};
+        const retVal = {};
+        for (const field of this.proxyConfig.significantFields) {
+            Object.assign(retVal, this.validateField(field));
+        }
+        return retVal;
     }
 
     /**
      * Это надо дернуть, чтобы валидировать одно поле, которому выключена автоматическая валидация
+     * Или использовать в служебных целях, чтобы получить валидность одного поля
+     * Валидирует только свои поля, вглубь не ходит, не его ответственность
      */
     validateField(field: string): ProxyValidationResult {
-        console.log('validate field', field);
-        return {};
+        const validators = this.proxyConfig.getFieldValidators(field);
+        const validatorNames = Object.keys(validators);
+        const retVal = {};
+        for (const validatorName of validatorNames) {
+            try {
+                retVal[validatorName] = validators[validatorName](this[field], this);
+            } catch (ex) {
+                console.error(`Shit happens in validator "${validatorName}": ${ex.toString()}`);
+            }
+        }
+        return {[field]: retVal};
     }
 
     /**
@@ -86,18 +100,28 @@ export class MetaValidateProxy<T> {
         this.nestedName = nestedName;
     }
 
+    /**
+     * Метод поднимает вверх событие изменения поля
+     */
     onChangeChildField(field: string): void {
         if (!this.$parent) {
-            console.log('bubbling complete:', field);
             return;
+        }
+        if (field.includes('.')) {
+            // run validation here
         }
         this.$parent.onChangeChildField(`${this.nestedName}.${field}`);
     }
 
+    /**
+     * Метод спускает во вложенные прокси событие изменения поля
+     */
     onChangeParentField(field: string): void {
         if (!this.childProxies.length) {
-            console.log('broadcasting complete', field);
             return;
+        }
+        if (field.includes('.')) {
+            // run validation here
         }
         for (const childProxyName of this.childProxies) {
             this[childProxyName].onChangeParentField(`$parent.${field}`);

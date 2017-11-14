@@ -1,4 +1,5 @@
 import { ProxyFieldConfig } from 'proxy/proxy-field-config';
+import { ProxyValidator } from 'proxy/interfaces';
 
 export class ProxyConfig {
     /**
@@ -56,5 +57,9 @@ export class ProxyConfig {
 
     getFieldConfig(field: string): ProxyFieldConfig {
         return this.fieldConfigs[field];
+    }
+
+    getFieldValidators(field: string): Record<string, ProxyValidator> {
+        return this.fieldConfigs[field].validatorsStore;
     }
 }
