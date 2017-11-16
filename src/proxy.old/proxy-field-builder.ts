@@ -47,8 +47,8 @@ export class ProxyFieldBuilder {
      * Например волшебным образом случилось, что в модели есть поле "Нет улицы", а в поле "адрес" есть поле "Улица"
      * Для её валидации можно прописать зависимость ['$parent.noStreet']
      */
-    with(fields: Array<string>): ProxyFieldBuilder {
-        this.fieldConfig.withFields = fields;
+    with(fields: string | Array<string>): ProxyFieldBuilder {
+        this.fieldConfig.withFields = Array.isArray(fields) ? fields : [fields];
         return this;
     }
 

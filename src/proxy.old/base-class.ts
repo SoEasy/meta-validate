@@ -1,4 +1,4 @@
-import { ProxyValidationResult } from './interfaces';
+import { PartialValidityMeta, ProxyValidationResult } from './interfaces';
 import { ProxyConfig } from './proxy-config';
 
 export class MetaValidateProxy<T> {
@@ -6,6 +6,7 @@ export class MetaValidateProxy<T> {
     private proxyConfig: ProxyConfig;
     private childProxies: Array<string> = [];
     private nestedName: string = null;
+    private validationResult: ProxyValidationResult = {};
 
     // TODO interface for metavalidateproxy
     $parent: any;
@@ -98,6 +99,13 @@ export class MetaValidateProxy<T> {
      */
     rememberNestedName(nestedName: string): void {
         this.nestedName = nestedName;
+    }
+
+    setupValidationResult(result: ProxyValidationResult): void {
+        Object.assign(this.validationResult, result);
+        if (this.$parent) {
+            this.$parent.setupValidationResult()
+        }
     }
 
     /**

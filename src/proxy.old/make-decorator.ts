@@ -32,8 +32,10 @@ export function makeDecorator(config: ProxyFieldConfig): any {
 
             if (newVal !== currentVal) {
                 this.passDataToDest(propertyKey, newVal);
-                this.onChangeChildField(propertyKey);
-                this.onChangeParentField(propertyKey);
+                // TODO мб не надо события гонять - мб в валидационной службе пройтись вверх-вниз
+                // this.onChangeChildField(propertyKey);
+                // this.onChangeParentField(propertyKey);
+                // const errors = validate(propertyKey, this);
                 // validate(propertyKey, proxyConfig, this);
             }
         };
