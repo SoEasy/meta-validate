@@ -1,14 +1,9 @@
 import { RegisterFieldEvent } from './../events';
 import { EventBus } from './../event-bus';
+import { BaseService } from './service.base';
 
-export class MakeDecoratorService {
-    private static instance: MakeDecoratorService;
-
-    static register(): void {
-        MakeDecoratorService.instance = new MakeDecoratorService();
-    }
-
-    constructor() {
+export class MakeDecoratorService extends BaseService {
+    protected onInit(): void {
         EventBus.on(RegisterFieldEvent, this.handle.bind(this));
     }
 
@@ -38,13 +33,4 @@ export class MakeDecoratorService {
         };
         Object.defineProperty(event.targetClass, event.field, descriptor);
     }
-
-    // private attachFieldMetaToProxyStore(event: RegisterFieldEvent): void {
-    //     if (!(Reflect as any).hasMetadata('mvProxy', event.targetClass)) {
-    //         (Reflect as any).defineMetadata('mvProxy', new ProxyConfig(), event.targetClass);
-    //     }
-    //     const proxyConfig: ProxyConfig = (Reflect as any).getMetadata('mvProxy', event.targetClass);
-    //
-    //     proxyConfig.registerField(propertyKey, config);
-    // }
 }

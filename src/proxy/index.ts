@@ -1,9 +1,9 @@
 import { ProxyFieldBuilderService } from './services/proxy-field-builder';
 import { MakeDecoratorService } from './services/make-decorator';
-import { ProxyClassConfigSerivce } from './services/proxy-class-config';
+import { ProxyClassConfigService } from './services/proxy-class-config';
 
-MakeDecoratorService.register();
-ProxyClassConfigSerivce.register();
+MakeDecoratorService.make();
+ProxyClassConfigService.make();
 
 export class ProxyValidator {
     static get Validation(): ProxyFieldBuilderService {
