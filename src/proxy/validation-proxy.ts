@@ -1,30 +1,40 @@
-import { IProxyValidationResult, IValidationProxy } from './interfaces';
+import { IValidationProxy } from './interfaces'; // IProxyValidationResult,
+import { ProxyConfig } from './models/proxy-config';
+import { ProxyRepository } from './proxy.repository';
 
-export class ValidationProxy<T> implements IValidationProxy {
+export class ValidationProxy<T> {
     private dest: T;
     private childProxies: Array<string> = [];
-    private nestedName: string = null;
+    private proxyConfig: ProxyConfig;
+    // private nestedName: string = null;
 
     $parent: IValidationProxy;
 
-    // /**
-    //  * Присоединить источник/назначение данных
-    //  * При присоединении прокси скопирует в себя все значимые для него поля
-    //  */
-    // attachDataSource(data: T): void {
-    //     this.dest = data;
-    //     for (const field of this.proxyConfig.significantFields) {
-    //         if (this.proxyConfig.isFieldNested(field)) {
-    //             // TODO подумать, как быть, когда nested-поле не инициализировано в источнике
-    //             this[field].attachDataSource(data[field]);
-    //             this[field].$parent = this;
-    //             this[field].rememberNestedName(field);
-    //             this.childProxies.push(field);
-    //         } else {
-    //             this[field] = data[field];
-    //         }
-    //     }
-    // }
+    constructor() {
+        // убрать в запросы
+        this.proxyConfig = ProxyRepository.getOrCreateProxyConfig(this.constructor.prototype);
+        console.log(this.proxyConfig);
+    }
+
+    /**
+     * Присоединить источник/назначение данных
+     * При присоединении прокси скопирует в себя все значимые для него поля
+     */
+    attachDataSource(data: T): void {
+        this.dest = data;
+
+        for (const field of this.proxyConfig.significantFields) {
+            if (this.proxyConfig.isFieldNested(field)) {
+                // TODO подумать, как быть, когда nested-поле не инициализировано в источнике
+                this[field].attachDataSource(data[field]);
+                this[field].$parent = this;
+                this[field].rememberNestedName(field);
+                this.childProxies.push(field);
+            } else {
+                this[field] = data[field];
+            }
+        }
+    }
     //
     // /**
     //  * Подписаться на проверку валидации
