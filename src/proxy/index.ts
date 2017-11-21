@@ -1,20 +1,22 @@
-import { ProxyFieldBuilderService } from './services/proxy-field-builder';
-import { MakeDecoratorService } from './services/make-decorator';
-import { ProxyClassConfigService } from './services/proxy-class-config';
+import { MakeDecoratorCommandHandler } from './command-handlers/make-decorator.handler';
+import { RegisterProxyFieldCommandHandler } from './command-handlers/register-proxy-field.handler';
+import { PassValueCommandHandler } from './command-handlers/pass-value.handler';
+import { ProxyFieldBuilder } from './utils/proxy-field-builder';
 
-MakeDecoratorService.make();
-ProxyClassConfigService.make();
+RegisterProxyFieldCommandHandler.register();
+MakeDecoratorCommandHandler.register();
+PassValueCommandHandler.register();
 
 export class ProxyValidator {
-    static get Validation(): ProxyFieldBuilderService {
-        return new ProxyFieldBuilderService();
+    static get Validation(): ProxyFieldBuilder {
+        return new ProxyFieldBuilder();
     }
 
     static get Nested(): any {
-        return new ProxyFieldBuilderService().nested().make();
+        return new ProxyFieldBuilder().nested().make();
     }
 
     static get Trigger(): any {
-        return new ProxyFieldBuilderService().trigger().make();
+        return new ProxyFieldBuilder().trigger().make();
     }
 }

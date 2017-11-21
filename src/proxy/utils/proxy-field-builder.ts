@@ -1,16 +1,15 @@
-import { ProxyFieldConfig } from './../models/proxy-field-config';
-import { IProxyValidator } from './../interfaces';
-import { EventBus } from './../event-bus';
-import { RegisterFieldEvent } from './../events';
+import { ProxyFieldConfig } from '../models/proxy-field-config';
+import { IProxyValidator } from '../interfaces';
+import { DecorateFieldCommand } from './../commands/decorate-field.command';
 
-export class ProxyFieldBuilderService {
+export class ProxyFieldBuilder {
     private fieldConfig: ProxyFieldConfig = new ProxyFieldConfig();
     private lastValidator: string;
 
     /**
      * Принимает и устанавливает имя поля, к которому биндится поле прокси
      */
-    setupDestName(name: string): ProxyFieldBuilderService {
+    setupDestName(name: string): ProxyFieldBuilder {
         this.fieldConfig.destName = name;
         return this;
     }
@@ -18,7 +17,7 @@ export class ProxyFieldBuilderService {
     /**
      * Принимает и устанавливает значения, при которых валидатор required должен выдавать true
      */
-    setupRequiredValues(values: Array<any>): ProxyFieldBuilderService {
+    setupRequiredValues(values: Array<any>): ProxyFieldBuilder {
         this.fieldConfig.requiredValues = values;
         return this;
     }
@@ -26,7 +25,7 @@ export class ProxyFieldBuilderService {
     /**
      * Принимает и устанавливает задержку, втечении которой не нужно вызывать валидаторы поля
      */
-    debounce(delay: number): ProxyFieldBuilderService {
+    debounce(delay: number): ProxyFieldBuilder {
         this.fieldConfig.debounce = delay;
         return this;
     }
@@ -34,7 +33,7 @@ export class ProxyFieldBuilderService {
     /**
      * Прокси больше не будет самостоятельно валидировать данное поле. Только при with или прямому вызову validateField
      */
-    manual(): ProxyFieldBuilderService {
+    manual(): ProxyFieldBuilder {
         this.fieldConfig.manual = true;
         return this;
     }
@@ -48,7 +47,7 @@ export class ProxyFieldBuilderService {
      * Например волшебным образом случилось, что в модели есть поле "Нет улицы", а в поле "адрес" есть поле "Улица"
      * Для её валидации можно прописать зависимость ['$parent.noStreet']
      */
-    with(fields: string | Array<string>): ProxyFieldBuilderService {
+    with(fields: string | Array<string>): ProxyFieldBuilder {
         this.fieldConfig.withFields = Array.isArray(fields) ? fields : [fields];
         return this;
     }
@@ -59,7 +58,7 @@ export class ProxyFieldBuilderService {
      * Инстанс - это прокси-объект
      * TODO подумать на тему проброса в инстанс родителей
      */
-    skip(condition: (instance: any) => boolean): ProxyFieldBuilderService {
+    skip(condition: (instance: any) => boolean): ProxyFieldBuilder {
         this.fieldConfig.skipCondition = condition;
         return this;
     }
@@ -72,7 +71,7 @@ export class ProxyFieldBuilderService {
      * @param {ProxyValidator} validator - функция валидации, на вход получает значение и инстанс. Возвращает true
      * если ошибка
      */
-    validator(name: string, validator: IProxyValidator): ProxyFieldBuilderService {
+    validator(name: string, validator: IProxyValidator): ProxyFieldBuilder {
         this.lastValidator = name;
         this.fieldConfig.validatorsStore[name] = validator;
         return this;
@@ -85,7 +84,7 @@ export class ProxyFieldBuilderService {
      * @param {(instance: any) => boolean} condition - функция, принимающая инстанс и решающая - надо валидироваться
      * или нет
      */
-    skipValidatorIf(condition: (instance: any) => boolean): ProxyFieldBuilderService {
+    skipValidatorIf(condition: (instance: any) => boolean): ProxyFieldBuilder {
         if (!this.lastValidator) {
             console.warn('No validators registered, setup validator condition skipped');
             return this;
@@ -95,23 +94,23 @@ export class ProxyFieldBuilderService {
         return this;
     }
 
-    nested(): ProxyFieldBuilderService {
+    nested(): ProxyFieldBuilder {
         this.fieldConfig.isNested = true;
         return this;
     }
 
-    trigger(): ProxyFieldBuilderService {
+    trigger(): ProxyFieldBuilder {
         this.fieldConfig.isTrigger = true;
         return this;
     }
 
     make(): any {
         return (targetClass: any, field: string): any => {
-            const event = new RegisterFieldEvent();
-            event.config = this.fieldConfig;
-            event.targetClass = targetClass;
-            event.field = field;
-            EventBus.emit(event);
+            const command = new DecorateFieldCommand();
+            command.config = this.fieldConfig;
+            command.targetClass = targetClass;
+            command.field = field;
+            command.do();
         };
     }
 }

@@ -1,4 +1,4 @@
-import { IProxyFieldConfig, IProxyValidator, IProxyValidationResult, IPartialValidityMeta } from './../interfaces';
+import { IProxyFieldConfig, IProxyValidator, IPartialValidityMeta } from './../interfaces';
 
 export class ProxyConfig {
     /**
@@ -6,34 +6,14 @@ export class ProxyConfig {
      */
     private fieldConfigs: Record<string, IProxyFieldConfig> = {};
 
-    private initialized: boolean = false;
-
     /**
      * По ключу поля лежит поля, которые надо валидировать после него. Реверс with
      */
     private fieldsRelationStore: Record<string, Array<string>> = {};
 
-    // TODO это должно быть не здесь - это надо уносить в метахранилище
-    validationCb: (validationResult: IProxyValidationResult) => void;
+    // // TODO это должно быть не здесь - это надо уносить в метахранилище
+    // validationCb: (validationResult: IProxyValidationResult) => void;
     partialValidityStore: Record<string, IPartialValidityMeta> = {};
-
-    /**
-     * Флаг, сообщающий, что уже можно присоединять источник/назначение данных
-     * @return {boolean}
-     */
-    get isInitialized(): boolean {
-        return this.initialized;
-    }
-
-    /**
-     * Служебный метод, его вызовет переопределенный конструктор прокси-класса
-     * До инициализации нельзя привязывать экземпляр данных
-     * Так же это убережет пользователя от того, чтобы в прокси-классе задать дефолтные значения - их задавать НЕЛЬЗЯ
-     * потому что это прокси - он не должен существовать сам по себе
-     */
-    init(): void {
-        this.initialized = true;
-    }
 
     /**
      * Регистрирует поле в общем конфиге прокси-класса, строит обратные зависимости полей

@@ -29,3 +29,9 @@ export interface IProxyFieldConfig {
     isNested: boolean;
     isTrigger: boolean;
 }
+
+export interface IValidationProxy {
+    $parent: IValidationProxy;
+    onChangeChildField(field: string): void;
+    onChangeParentField(field: string): void;
+}
