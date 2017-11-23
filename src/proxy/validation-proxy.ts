@@ -1,4 +1,4 @@
-import { IValidationProxy } from './interfaces'; // IProxyValidationResult,
+import { IValidationProxy, IProxyValidationResult } from './interfaces';
 import { ProxyConfig } from './models/proxy-config';
 import { ProxyRepository } from './proxy.repository';
 
@@ -6,14 +6,13 @@ export class ValidationProxy<T> {
     private dest: T;
     private childProxies: Array<string> = [];
     private proxyConfig: ProxyConfig;
-    // private nestedName: string = null;
-
+    private nestedName: string = null;
     $parent: IValidationProxy;
+    validity: IProxyValidationResult = {};
 
     constructor() {
         // убрать в запросы
         this.proxyConfig = ProxyRepository.getOrCreateProxyConfig(this.constructor.prototype);
-        console.log(this.proxyConfig);
     }
 
     /**
@@ -56,60 +55,64 @@ export class ValidationProxy<T> {
     // subscribeToPartialValidity(validityName: string, cb: (validity: IProxyValidationResult) => void): void {
     //     console.log('subscribe part validity', validityName, cb);
     // }
-    //
-    // /**
-    //  * Вызвать полную валидацию объекта
-    //  */
-    // validate(): IProxyValidationResult {
-    //     const retVal = {};
-    //     for (const field of this.proxyConfig.significantFields) {
-    //         Object.assign(retVal, this.validateField(field));
-    //     }
-    //     return retVal;
-    // }
-    //
-    // /**
-    //  * Это надо дернуть, чтобы валидировать одно поле, которому выключена автоматическая валидация
-    //  * Или использовать в служебных целях, чтобы получить валидность одного поля
-    //  * Валидирует только свои поля, вглубь не ходит, не его ответственность
-    //  */
-    // validateField(field: string): IProxyValidationResult {
-    //     const validators = this.proxyConfig.getFieldValidators(field);
-    //     const validatorNames = Object.keys(validators);
-    //     const retVal = {};
-    //     for (const validatorName of validatorNames) {
-    //         try {
-    //             retVal[validatorName] = validators[validatorName](this[field], this);
-    //         } catch (ex) {
-    //             console.error(`Shit happens in validator "${validatorName}": ${ex.toString()}`);
-    //         }
-    //     }
-    //     return {[field]: retVal};
-    // }
-    //
-    // /**
-    //  * На самом деле служебный метод, который дергают сеттеры чтобы прокинуть данные в источник
-    //  */
-    // passDataToDest(fieldName: string, value: any): void {
-    //     if (!this.proxyConfig.isFieldNested(fieldName)) {
-    //         this.dest[fieldName] = value;
-    //     }
-    // }
-    //
-    // /**
-    //  * Запомнить имя вложенного поля для составления цепочек зависимостей
-    //  */
-    // rememberNestedName(nestedName: string): void {
-    //     this.nestedName = nestedName;
-    // }
-    //
-    // setupValidationResult(result: IProxyValidationResult): void {
-    //     Object.assign(this.validationResult, result);
-    //     if (this.$parent) {
-    //         this.$parent.setupValidationResult()
-    //     }
-    // }
-    //
+
+    /**
+     * Вызвать полную валидацию объекта
+     */
+    validate(): IProxyValidationResult {
+        const retVal = {};
+        for (const field of this.proxyConfig.significantFields) {
+            Object.assign(retVal, {[field]: this.validateField(field)});
+        }
+        return retVal;
+    }
+
+    /**
+     * Это надо дернуть, чтобы валидировать одно поле, которому выключена автоматическая валидация
+     * Или использовать в служебных целях, чтобы получить валидность одного поля
+     * Валидирует только свои поля, вглубь не ходит, не его ответственность
+     */
+    validateField(field: string): IProxyValidationResult {
+        const validators = this.proxyConfig.getFieldValidators(field);
+        const validatorNames = Object.keys(validators);
+        const fieldValidationResult = {};
+        for (const validatorName of validatorNames) {
+            try {
+                fieldValidationResult[validatorName] = validators[validatorName](this[field], this);
+            } catch (ex) {
+                console.error(`Shit happens in validator "${validatorName}": ${ex.toString()}`);
+            }
+        }
+        return fieldValidationResult;
+    }
+
+    assignValidity(validity: IProxyValidationResult): void {
+        Object.assign(this.validity, validity);
+    }
+
+    /**
+     * На самом деле служебный метод, который дергают сеттеры чтобы прокинуть данные в источник
+     */
+    passDataToDest(fieldName: string, value: any): void {
+        if (!this.proxyConfig.isFieldNested(fieldName)) {
+            this.dest[fieldName] = value;
+        }
+    }
+
+    /**
+     * Запомнить имя вложенного поля для составления цепочек зависимостей
+     */
+    rememberNestedName(nestedName: string): void {
+        this.nestedName = nestedName;
+    }
+
+    setupValidationResult(result: IProxyValidationResult): void {
+        Object.assign(this.validity, result);
+        if (this.$parent) {
+            this.$parent.setupValidationResult(this.validity);
+        }
+    }
+
     // /**
     //  * Метод поднимает вверх событие изменения поля
     //  */

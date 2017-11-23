@@ -17,6 +17,7 @@ export class ProxyValidator {
     }
 
     static get Trigger(): any {
+        // TODO Добавить проверку на количество аргументов. Чтобы декоратор работал как с вызовом, так и без
         return new ProxyFieldBuilder().trigger().make();
     }
 }

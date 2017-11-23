@@ -11,4 +11,8 @@ export class ProxyRepository {
         }
         return proxyConfig;
     }
+
+    static getProxyConfigByInstance(instance: any): ProxyConfig {
+        return ProxyRepository.getOrCreateProxyConfig(instance.constructor.prototype);
+    }
 }

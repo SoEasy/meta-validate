@@ -23,7 +23,7 @@
       "spaces"
     ],
     "label-position": true,
-    "max-classes-per-file": [true, 5],
+    "max-classes-per-file": false,
     "max-line-length": [true, 140],
     "member-access": false,
     "member-ordering": [
@@ -33,11 +33,6 @@
     ],
     "no-arg": true,
     "no-bitwise": true,
-    "no-console": [
-      true,
-      "debug",
-      "info"
-    ],
     "no-construct": true,
     "no-debugger": false,
     "no-duplicate-variable": true,
