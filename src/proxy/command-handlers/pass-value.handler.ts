@@ -7,6 +7,5 @@ export class PassValueCommandHandler extends CQRS.BaseCommandHandler {
 
     handle(command: ChangeFieldCommand): void {
         command.target.passDataToDest(command.fieldName, command.newValue);
-        // console.log(ProxyRepository.getOrCreateProxyConfig(command.target.constructor.prototype));
     }
 }

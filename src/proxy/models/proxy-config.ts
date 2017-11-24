@@ -49,4 +49,10 @@ export class ProxyConfig {
     getFieldValidators(field: string): Record<string, IProxyValidator> {
         return this.fieldConfigs[field].validatorsStore;
     }
+
+    get nestedFields(): Array<string> {
+        return Object.keys(this.fieldConfigs).filter(
+            key => this.fieldConfigs[key].isNested
+        );
+    }
 }

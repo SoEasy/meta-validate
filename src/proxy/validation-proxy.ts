@@ -4,15 +4,13 @@ import { ProxyRepository } from './proxy.repository';
 
 export class ValidationProxy<T> {
     private dest: T;
-    private childProxies: Array<string> = [];
-    private proxyConfig: ProxyConfig;
+    // private childProxies: Array<string> = [];
     private nestedName: string = null;
     $parent: IValidationProxy;
     validity: IProxyValidationResult = {};
 
-    constructor() {
-        // убрать в запросы
-        this.proxyConfig = ProxyRepository.getOrCreateProxyConfig(this.constructor.prototype);
+    get proxyConfig(): ProxyConfig {
+        return ProxyRepository.getProxyConfigByInstance(this);
     }
 
     /**
@@ -22,13 +20,14 @@ export class ValidationProxy<T> {
     attachDataSource(data: T): void {
         this.dest = data;
 
+        // TODO запустить команду "Пробросить в источник"
         for (const field of this.proxyConfig.significantFields) {
             if (this.proxyConfig.isFieldNested(field)) {
                 // TODO подумать, как быть, когда nested-поле не инициализировано в источнике
                 this[field].attachDataSource(data[field]);
                 this[field].$parent = this;
                 this[field].rememberNestedName(field);
-                this.childProxies.push(field);
+                // this.childProxies.push(field);
             } else {
                 this[field] = data[field];
             }
@@ -86,8 +85,12 @@ export class ValidationProxy<T> {
         return fieldValidationResult;
     }
 
-    assignValidity(validity: IProxyValidationResult): void {
-        Object.assign(this.validity, validity);
+    assignValidity(field: string, validity: IProxyValidationResult): void {
+        Object.assign(this.validity, {[field]: validity});
+    }
+
+    emitValidity(): void {
+        console.log('emit validity to self handlers');
     }
 
     /**
@@ -106,12 +109,12 @@ export class ValidationProxy<T> {
         this.nestedName = nestedName;
     }
 
-    setupValidationResult(result: IProxyValidationResult): void {
-        Object.assign(this.validity, result);
-        if (this.$parent) {
-            this.$parent.setupValidationResult(this.validity);
-        }
-    }
+    // setupValidationResult(result: IProxyValidationResult): void {
+    //     Object.assign(this.validity, result);
+    //     if (this.$parent) {
+    //         this.$parent.setupValidationResult(this.validity);
+    //     }
+    // }
 
     // /**
     //  * Метод поднимает вверх событие изменения поля
@@ -128,16 +131,11 @@ export class ValidationProxy<T> {
     //
     // /**
     //  * Метод спускает во вложенные прокси событие изменения поля
+    //  * Вызывается извне напрямую у ребенка, передает имя поля из родителя
     //  */
     // onChangeParentField(field: string): void {
-    //     if (!this.childProxies.length) {
-    //         return;
-    //     }
-    //     if (field.includes('.')) {
-    //         // run validation here
-    //     }
-    //     for (const childProxyName of this.childProxies) {
-    //         this[childProxyName].onChangeParentField(`$parent.${field}`);
-    //     }
+    //     field = `$parent.${field}`;
+    //     console.log('validation nested', field, this.proxyConfig.getRelatedField(field));
+    //     // run validation here
     // }
 }
