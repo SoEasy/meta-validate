@@ -57,6 +57,7 @@ class ProxyPerson extends ValidationProxy<any> {
 
 class ProxyCustomer extends ValidationProxy<any> {
     @ProxyValidator.Validation
+    .skip(() => true)
     .with('person.brain.iq')
     .validator('tooMuchBrain', (_, instance) => instance.person.brain.iq < 80)
     .make()
@@ -70,15 +71,11 @@ describe('Base bus interaction', () => {
     it('must correctly print nested fields', () => {
         const proxy = new ProxyCustomer();
         proxy.attachDataSource(new Customer());
-        // console.log('=== START');
-        // proxy.foo = 2;
-        // console.log('===========');
-        // proxy.foo = 1;
-        console.log('=== UPPER');
+        proxy.foo = 2;
+        proxy.foo = 1;
         proxy.person.brain.iq = 2;
-        console.log('===========');
         proxy.person.brain.iq = 92;
-        console.log('===========');
         proxy.person.brain.iq = 30;
+        console.log(proxy.validate());
     });
 });

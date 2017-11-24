@@ -61,7 +61,12 @@ export class ValidationProxy<T> {
     validate(): IProxyValidationResult {
         const retVal = {};
         for (const field of this.proxyConfig.significantFields) {
-            Object.assign(retVal, {[field]: this.validateField(field)});
+            if (this.proxyConfig.isFieldNested(field)) {
+                Object.assign(retVal, {[field]: this[field].validate()});
+            } else {
+                Object.assign(retVal, {[field]: this.validateField(field)});
+            }
+
         }
         return retVal;
     }
@@ -71,13 +76,16 @@ export class ValidationProxy<T> {
      * Или использовать в служебных целях, чтобы получить валидность одного поля
      * Валидирует только свои поля, вглубь не ходит, не его ответственность
      */
+    // TODO нужно унести в сервис валидации
     validateField(field: string): IProxyValidationResult {
         const validators = this.proxyConfig.getFieldValidators(field);
         const validatorNames = Object.keys(validators);
         const fieldValidationResult = {};
         for (const validatorName of validatorNames) {
             try {
-                fieldValidationResult[validatorName] = validators[validatorName](this[field], this);
+                const mustSkip = this.proxyConfig.mustSkipValidators(field, this) ||
+                                 this.proxyConfig.mustSkipValidator(field, validatorName, this);
+                fieldValidationResult[validatorName] = mustSkip ? false : validators[validatorName](this[field], this);
             } catch (ex) {
                 console.error(`Shit happens in validator "${validatorName}": ${ex.toString()}`);
             }
@@ -90,7 +98,7 @@ export class ValidationProxy<T> {
     }
 
     emitValidity(): void {
-        console.log('emit validity to self handlers');
+        // console.log('emit validity to self handlers');
     }
 
     /**
@@ -108,34 +116,4 @@ export class ValidationProxy<T> {
     rememberNestedName(nestedName: string): void {
         this.nestedName = nestedName;
     }
-
-    // setupValidationResult(result: IProxyValidationResult): void {
-    //     Object.assign(this.validity, result);
-    //     if (this.$parent) {
-    //         this.$parent.setupValidationResult(this.validity);
-    //     }
-    // }
-
-    // /**
-    //  * Метод поднимает вверх событие изменения поля
-    //  */
-    // onChangeChildField(field: string): void {
-    //     if (!this.$parent) {
-    //         return;
-    //     }
-    //     if (field.includes('.')) {
-    //         // run validation here
-    //     }
-    //     this.$parent.onChangeChildField(`${this.nestedName}.${field}`);
-    // }
-    //
-    // /**
-    //  * Метод спускает во вложенные прокси событие изменения поля
-    //  * Вызывается извне напрямую у ребенка, передает имя поля из родителя
-    //  */
-    // onChangeParentField(field: string): void {
-    //     field = `$parent.${field}`;
-    //     console.log('validation nested', field, this.proxyConfig.getRelatedField(field));
-    //     // run validation here
-    // }
 }

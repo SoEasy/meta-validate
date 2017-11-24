@@ -50,6 +50,15 @@ export class ProxyConfig {
         return this.fieldConfigs[field].validatorsStore;
     }
 
+    mustSkipValidators(field: string, instance: any): boolean {
+        return this.fieldConfigs[field].skipCondition ? this.fieldConfigs[field].skipCondition(instance) : false;
+    }
+
+    mustSkipValidator(field: string, validatorName: string, instance: any): boolean {
+        const skipValidatorCondition = this.fieldConfigs[field].skipValidatorConditions[validatorName];
+        return skipValidatorCondition ? skipValidatorCondition(instance) : false;
+    }
+
     get nestedFields(): Array<string> {
         return Object.keys(this.fieldConfigs).filter(
             key => this.fieldConfigs[key].isNested

@@ -12,7 +12,6 @@ export class ValidationCommandHandler extends CQRS.BaseCommandHandler {
             const relatedFieldValidationResult = nestedInstance.validateField(relatedField);
             nestedInstance.assignValidity(relatedField, relatedFieldValidationResult);
         }
-        console.log(nestedInstance.validity);
         nestedInstance.emitValidity();
     }
 
@@ -39,14 +38,13 @@ export class ValidationCommandHandler extends CQRS.BaseCommandHandler {
             return;
         }
         ValidationCommandHandler.validateParentRelatedFields(instance.$parent, `${instance.nestedName}.${changedField}`);
-        console.log('PARENT VALIDITY', instance.$parent.validity);
         ValidationCommandHandler.validateRelatedFieldsThroughNested(instance.$parent, `${instance.nestedName}.${changedField}`);
         ValidationCommandHandler.validateParentFields(instance.$parent, `${instance.nestedName}.${changedField}`);
     }
 
     handle(command: ChangeFieldCommand): void {
         const instance = command.target;
-        // TODO что-то делать при установке Nested-полей
+        // TODO что-то делать при установке Nested-полей. А мб и так ок
         if (ProxyRepository.getProxyConfigByInstance(instance).nestedFields.includes(command.fieldName)) {
             return;
         }
