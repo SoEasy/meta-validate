@@ -6,6 +6,7 @@ export class ValidationProxy<T> {
     private dest: T;
     // private childProxies: Array<string> = [];
     private nestedName: string = null;
+    private validityHandler: (validity: IProxyValidationResult) => void = null;
     $parent: IValidationProxy;
     validity: IProxyValidationResult = {};
 
@@ -33,13 +34,13 @@ export class ValidationProxy<T> {
             }
         }
     }
-    //
-    // /**
-    //  * Подписаться на проверку валидации
-    //  */
-    // subscribeToValidity(cb: (validity: IProxyValidationResult) => void): void {
-    //     console.log('subscribe to validity', cb);
-    // }
+
+    /**
+     * Подписаться на проверку валидации
+     */
+    subscribeToValidity(cb: (validity: IProxyValidationResult) => void): void {
+        this.validityHandler = cb;
+    }
     //
     // /**
     //  * Зарегистрировать частичную проверку валидации, проверяющую только переданные поля
@@ -98,7 +99,9 @@ export class ValidationProxy<T> {
     }
 
     emitValidity(): void {
-        // console.log('emit validity to self handlers');
+        if (this.validityHandler) {
+            this.validityHandler(this.validity);
+        }
     }
 
     /**

@@ -26,11 +26,6 @@ class ProxyValidatorsTest extends ValidationProxy<any> {
     value: string;
 }
 
-// class WithTest {
-//     value: string = 'hello';
-//     mustValidate: boolean = true;
-// }
-
 class ProxyWithTest extends ValidationProxy<any> {
     @ProxyValidator.Validation
     .validator('validity', (_, instance) => instance.mustValidate)

@@ -1,5 +1,5 @@
 import 'reflect-metadata';
-// import { expect } from 'chai';
+import { expect } from 'chai';
 import { ProxyValidator } from './../../src/proxy';
 import { ValidationProxy } from './../../src/proxy/validation-proxy';
 
@@ -68,14 +68,25 @@ class ProxyCustomer extends ValidationProxy<any> {
 }
 
 describe('Base bus interaction', () => {
-    it('must correctly print nested fields', () => {
+    it('must correctly validate nested and parent releated fields', () => {
         const proxy = new ProxyCustomer();
         proxy.attachDataSource(new Customer());
         proxy.foo = 2;
-        proxy.foo = 1;
+        // proxy.foo = 1;
         proxy.person.brain.iq = 2;
         proxy.person.brain.iq = 92;
         proxy.person.brain.iq = 30;
-        console.log(proxy.validate());
+        expect(proxy.validate()).to.eql({
+            foo: { tooMuchBrain: false },
+            person: {
+                name: { invalid: false },
+                brain: {
+                    iq: { isIdiot: true }
+                },
+                hands: {
+                    canWork: { canSimpleWork: true }
+                }
+            }
+        });
     });
 });
