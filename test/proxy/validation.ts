@@ -48,10 +48,10 @@ class ProxyPerson extends ValidationProxy<any> {
     .make()
     name: string;
 
-    @ProxyValidator.Nested
+    @ProxyValidator.Nested.make()
     brain: ProxyBrain = new ProxyBrain();
 
-    @ProxyValidator.Nested
+    @ProxyValidator.Nested.make()
     hands: ProxyHands = new ProxyHands();
 }
 
@@ -63,7 +63,7 @@ class ProxyCustomer extends ValidationProxy<any> {
     .make()
     foo: number;
 
-    @ProxyValidator.Nested
+    @ProxyValidator.Nested.make()
     person: ProxyPerson = new ProxyPerson();
 }
 
@@ -93,7 +93,6 @@ describe('Base bus interaction', () => {
     it('must subscribe to validity and emit', () => {
         const proxy = new ProxyCustomer();
         proxy.attachDataSource(new Customer());
-        proxy.validateAndAssign();
         let counter = 0;
         proxy.subscribeToValidity(validity => {
             console.log(JSON.stringify(validity));

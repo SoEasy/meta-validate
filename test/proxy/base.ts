@@ -11,6 +11,9 @@ class PassTest {
 class ProxyPassTest extends ValidationProxy<any> {
     @ProxyValidator.Validation.make()
     foo: number;
+
+    @ProxyValidator.Validation.setupDestName('baz').make()
+    bar: number;
 }
 
 class ValidatorsTest {
@@ -33,7 +36,7 @@ class ProxyWithTest extends ValidationProxy<any> {
     .make()
     value: string;
 
-    @ProxyValidator.Trigger
+    @ProxyValidator.Trigger.make()
     mustValidate: boolean;
 }
 
@@ -62,6 +65,15 @@ describe('Base bus interaction', () => {
             proxy.foo = 3;
             expect(dest.foo).to.eql(3);
         });
+
+        it('must pass value to custom dest', () => {
+            const dest = {baz: 2};
+            const proxy = new ProxyPassTest();
+            proxy.attachDataSource(dest);
+            proxy.bar = 3;
+            expect(dest.baz).to.eql(3);
+            expect(dest).to.eql({baz: 3});
+        })
     });
 
     describe('Validator', () => {

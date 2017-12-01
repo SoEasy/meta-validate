@@ -19,20 +19,24 @@ export class ValidationProxy<T> {
      * При присоединении прокси скопирует в себя все значимые для него поля
      */
     attachDataSource(data: T): void {
+        this.attachDataSourceWithoutValidation(data);
+        this.validateAndAssign();
+    }
+
+    protected attachDataSourceWithoutValidation(data: T): void {
         this.dest = data;
 
         // TODO запустить команду "Пробросить в источник"
         for (const field of this.proxyConfig.significantFields) {
             if (this.proxyConfig.isFieldNested(field)) {
                 // TODO подумать, как быть, когда nested-поле не инициализировано в источнике
-                this[field].attachDataSource(data[field]);
+                this[field].attachDataSourceWithoutValidation(data[field]);
                 this[field].$parent = this;
                 this[field].rememberNestedName(field);
             } else {
                 this[field] = data[field];
             }
         }
-        // this.selfValidate();
     }
 
     /**
@@ -72,7 +76,7 @@ export class ValidationProxy<T> {
         return retVal;
     }
 
-    validateAndAssign(): void {
+    protected validateAndAssign(): void {
         for (const field of this.proxyConfig.significantFields) {
             if (this.proxyConfig.isFieldNested(field)) {
                 this[field].validateAndAssign();
@@ -127,7 +131,7 @@ export class ValidationProxy<T> {
      */
     passDataToDest(fieldName: string, value: any): void {
         if (!this.proxyConfig.isFieldNested(fieldName)) {
-            this.dest[fieldName] = value;
+            this.dest[this.proxyConfig.getFieldDestName(fieldName)] = value;
         }
     }
 

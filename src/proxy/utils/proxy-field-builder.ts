@@ -21,22 +21,22 @@ export class ProxyFieldBuilder {
         this.fieldConfig.requiredValues = values;
         return this;
     }
+    //
+    // /**
+    //  * Принимает и устанавливает задержку, втечении которой не нужно вызывать валидаторы поля
+    //  */
+    // debounce(delay: number): ProxyFieldBuilder {
+    //     this.fieldConfig.debounce = delay;
+    //     return this;
+    // }
 
-    /**
-     * Принимает и устанавливает задержку, втечении которой не нужно вызывать валидаторы поля
-     */
-    debounce(delay: number): ProxyFieldBuilder {
-        this.fieldConfig.debounce = delay;
-        return this;
-    }
-
-    /**
-     * Прокси больше не будет самостоятельно валидировать данное поле. Только при with или прямому вызову validateField
-     */
-    manual(): ProxyFieldBuilder {
-        this.fieldConfig.manual = true;
-        return this;
-    }
+    // /**
+    //  * Прокси больше не будет самостоятельно валидировать данное поле. Только при with или прямому вызову validateField
+    //  */
+    // manual(): ProxyFieldBuilder {
+    //     this.fieldConfig.manual = true;
+    //     return this;
+    // }
 
     /**
      * Принимает и устанавливает поля, при изменении которых нужно провалидировать данное поле

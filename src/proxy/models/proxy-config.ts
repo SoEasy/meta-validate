@@ -46,8 +46,11 @@ export class ProxyConfig {
         return this.fieldConfigs[field].isNested;
     }
 
-    getFieldConfig(field: string): IProxyFieldConfig {
-        return this.fieldConfigs[field];
+    // getFieldConfig(field: string): IProxyFieldConfig {
+    //     return this.fieldConfigs[field];
+    // }
+    getFieldDestName(field: string): string {
+        return this.fieldConfigs[field].destName || field;
     }
 
     getFieldValidators(field: string): Record<string, IProxyValidator> {
