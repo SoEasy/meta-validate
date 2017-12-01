@@ -89,4 +89,19 @@ describe('Base bus interaction', () => {
             }
         });
     });
+
+    it('must subscribe to validity and emit', () => {
+        const proxy = new ProxyCustomer();
+        proxy.attachDataSource(new Customer());
+        proxy.validateAndAssign();
+        let counter = 0;
+        proxy.subscribeToValidity(validity => {
+            console.log(JSON.stringify(validity));
+            counter += 1;
+        });
+        proxy.foo = 1;
+        proxy.foo = 2;
+        proxy.person.hands.canWork = true;
+        expect(counter).to.eql(3);
+    });
 });

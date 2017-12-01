@@ -34,6 +34,10 @@ export class ProxyConfig {
         return Object.keys(this.fieldConfigs);
     }
 
+    get nestedFields(): Array<string> {
+        return Object.keys(this.fieldConfigs).filter(key => this.fieldConfigs[key].isNested);
+    }
+
     getRelatedField(field: string): Array<string> {
         return this.fieldsRelationStore[field] || [];
     }
@@ -57,11 +61,5 @@ export class ProxyConfig {
     mustSkipValidator(field: string, validatorName: string, instance: any): boolean {
         const skipValidatorCondition = this.fieldConfigs[field].skipValidatorConditions[validatorName];
         return skipValidatorCondition ? skipValidatorCondition(instance) : false;
-    }
-
-    get nestedFields(): Array<string> {
-        return Object.keys(this.fieldConfigs).filter(
-            key => this.fieldConfigs[key].isNested
-        );
     }
 }

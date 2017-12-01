@@ -56,7 +56,6 @@ export class ProxyFieldBuilder {
      * Принимает функцию-условие, которая на вход получит инстанс и вернет - стоит запускать валидаторы или нет
      * Если условие возвращает true - валидация пропускается
      * Инстанс - это прокси-объект
-     * TODO подумать на тему проброса в инстанс родителей
      */
     skip(condition: (instance: any) => boolean): ProxyFieldBuilder {
         this.fieldConfig.skipCondition = condition;

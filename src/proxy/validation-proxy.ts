@@ -28,11 +28,11 @@ export class ValidationProxy<T> {
                 this[field].attachDataSource(data[field]);
                 this[field].$parent = this;
                 this[field].rememberNestedName(field);
-                // this.childProxies.push(field);
             } else {
                 this[field] = data[field];
             }
         }
+        // this.selfValidate();
     }
 
     /**
@@ -72,6 +72,17 @@ export class ValidationProxy<T> {
         return retVal;
     }
 
+    validateAndAssign(): void {
+        for (const field of this.proxyConfig.significantFields) {
+            if (this.proxyConfig.isFieldNested(field)) {
+                this[field].validateAndAssign();
+                Object.assign(this.validity, {[field]: this[field].validity});
+            } else {
+                Object.assign(this.validity, {[field]: this.validateField(field)});
+            }
+        }
+    }
+
     /**
      * Это надо дернуть, чтобы валидировать одно поле, которому выключена автоматическая валидация
      * Или использовать в служебных целях, чтобы получить валидность одного поля
@@ -96,6 +107,13 @@ export class ValidationProxy<T> {
 
     assignValidity(field: string, validity: IProxyValidationResult): void {
         Object.assign(this.validity, {[field]: validity});
+    }
+
+    collectValidity(): void {
+        for (const nestedField of this.proxyConfig.nestedFields) {
+            this[nestedField].collectValidity();
+            Object.assign(this.validity, { [nestedField]: this[nestedField].validity });
+        }
     }
 
     emitValidity(): void {
